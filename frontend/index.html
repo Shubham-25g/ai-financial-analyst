@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — AI Financial Analyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    /* neutral graphite base — no green/warm cast */
+    --ink:#0B0C0E;
+    --surface:#131417;
+    --surface-2:#1B1D21;
+    --surface-hover:#202327;
+    --hairline:rgba(255,255,255,0.08);
+    --hairline-strong:rgba(255,255,255,0.15);
+    --text:#F1F2F4;
+    --text-dim:#9A9DA3;
+    --text-faint:#5B5E66;
+    --quant:#57C4E0;
+    --quant-soft:rgba(87,196,224,0.13);
+    --narrative:#E7AD52;
+    --narrative-soft:rgba(231,173,82,0.13);
+    --risk:#E56C58;
+    --risk-soft:rgba(229,108,88,0.12);
+    --catalyst:#5FC48A;
+    --catalyst-soft:rgba(95,196,138,0.12);
+    --radius:10px;
+    --radius-sm:7px;
+    --shadow: 0 10px 34px rgba(0,0,0,0.42);
+    --ease: cubic-bezier(.22,.8,.32,1);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 550px at 12% -8%, rgba(87,196,224,0.045), transparent 60%),
+      radial-gradient(950px 480px at 100% 0%, rgba(231,173,82,0.04), transparent 60%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001s !important; transition-duration:.001s !important; } }
+
+  .wrap{max-width:1140px; margin:0 auto; padding:44px 24px 90px; animation:pageIn .55s var(--ease) both;}
+  @keyframes pageIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+  /* ---------- masthead ---------- */
+  .masthead{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:14px;}
+  .brand{font-family:'Fraunces',serif; font-weight:600; font-size:30px; letter-spacing:-0.01em; color:var(--text);}
+  .brand em{font-style:italic; font-weight:500; background:linear-gradient(100deg,var(--quant),var(--narrative)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .tagline{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em;}
+  .status-pill{display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:var(--text-dim); padding:6px 12px; border:1px solid var(--hairline); border-radius:20px; transition:border-color .3s var(--ease);}
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--text-faint); transition:background .3s var(--ease);}
+  .status-dot.ok{background:var(--catalyst); box-shadow:0 0 0 0 rgba(95,196,138,0.55); animation:pulseDot 2.4s ease-out infinite;}
+  .status-dot.bad{background:var(--risk); box-shadow:0 0 8px var(--risk);}
+  @keyframes pulseDot{
+    0%{ box-shadow:0 0 0 0 rgba(95,196,138,0.45); }
+    70%{ box-shadow:0 0 0 7px rgba(95,196,138,0); }
+    100%{ box-shadow:0 0 0 0 rgba(95,196,138,0); }
+  }
+
+  .thesis-line{height:2px; margin:20px 0 32px; border-radius:2px;
+    background:linear-gradient(90deg, var(--quant) 0%, var(--quant) 42%, var(--hairline-strong) 50%, var(--narrative) 58%, var(--narrative) 100%);
+    opacity:0.85; transform-origin:left center; animation:lineIn .7s .1s var(--ease) both;}
+  @keyframes lineIn{ from{transform:scaleX(0);} to{transform:scaleX(1);} }
+
+  /* ---------- controls ---------- */
+  .controls{display:flex; gap:12px; align-items:center; margin-bottom:32px; flex-wrap:wrap;}
+  .field-label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em; margin-right:2px;}
+  select{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--surface-2);
+    color:var(--text); border:1px solid var(--hairline-strong); padding:10px 16px; border-radius:var(--radius-sm);
+    cursor:pointer; appearance:none; transition:border-color .2s var(--ease), background .2s var(--ease);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9DA3'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:32px;
+  }
+  select:hover{ border-color:var(--hairline-strong); background-color:var(--surface-hover); }
+  select:focus-visible, button:focus-visible{ outline:2px solid var(--quant); outline-offset:2px; }
+
+  button{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600;
+    border:none; border-radius:var(--radius-sm); padding:10px 18px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px; letter-spacing:0.01em;
+    transition:filter .18s var(--ease), transform .12s var(--ease), box-shadow .2s var(--ease);
+  }
+  button:hover:not(:disabled){ transform:translateY(-1px); }
+  button:active:not(:disabled){ transform:translateY(0); }
+  button:disabled{opacity:0.55; cursor:wait;}
+  .btn-primary{ background:var(--quant); color:#04262C; }
+  .btn-primary:hover:not(:disabled){ filter:brightness(1.12); box-shadow:0 6px 20px rgba(87,196,224,0.25); }
+  .btn-accent{ background:var(--narrative); color:#2E1F06; }
+  .btn-accent:hover:not(:disabled){ filter:brightness(1.12); box-shadow:0 6px 20px rgba(231,173,82,0.22); }
+  .spinner{ width:11px; height:11px; border-radius:50%; border:2px solid rgba(0,0,0,0.25); border-top-color:currentColor; animation:spin .7s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- hero ---------- */
+  .hero{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap; gap:14px;}
+  .hero .price-block .label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em; margin-bottom:6px;}
+  .hero .price{font-family:'Fraunces',serif; font-size:54px; font-weight:600; line-height:1; transition:opacity .2s;}
+  .hero .price .sub{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim); font-weight:400; display:block; margin-top:8px; letter-spacing:0.01em;}
+  .delta{font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; padding:8px 16px; border-radius:var(--radius-sm); white-space:nowrap;}
+  .delta.pos{color:var(--catalyst); background:var(--catalyst-soft);}
+  .delta.neg{color:var(--risk); background:var(--risk-soft);}
+  .fade-slide-in{ animation:fadeSlideUp .45s var(--ease) both; }
+  @keyframes fadeSlideUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+  .pop-in{ animation:popIn .4s var(--ease) both; }
+  @keyframes popIn{ from{opacity:0; transform:scale(.92);} to{opacity:1; transform:scale(1);} }
+
+  /* ---------- panels ---------- */
+  .panel{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--hairline); border-radius:var(--radius);
+    padding:24px; box-shadow:var(--shadow);
+    transition:border-color .3s var(--ease);
+  }
+  .chart-panel{ margin-bottom:30px; }
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--quant); margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+  .eyebrow::before{content:''; width:6px; height:6px; background:var(--quant); border-radius:50%; box-shadow:0 0 6px var(--quant);}
+  .eyebrow.narrative-eyebrow{color:var(--narrative);}
+  .eyebrow.narrative-eyebrow::before{background:var(--narrative); box-shadow:0 0 6px var(--narrative);}
+
+  .grid{display:grid; grid-template-columns:1.05fr 1fr; gap:24px;}
+  @media (max-width:840px){.grid{grid-template-columns:1fr;}}
+
+  /* ---------- verdict panel: internal two-column report layout ---------- */
+  .verdict-panel{ margin-bottom:34px; }
+  .verdict-layout{ display:grid; grid-template-columns:200px 1fr; gap:28px; align-items:start; }
+  @media (max-width:700px){ .verdict-layout{ grid-template-columns:1fr; } }
+  .verdict-left{ display:flex; flex-direction:column; align-items:flex-start; gap:14px; }
+  .verdict-right{ min-width:0; }
+  .verdict-divider{ display:none; }
+  @media (min-width:701px){
+    .verdict-left{ border-right:1px solid var(--hairline); padding-right:28px; }
+  }
+
+  .stamp{
+    font-family:'Fraunces',serif; font-weight:600; font-size:22px;
+    text-transform:uppercase; letter-spacing:0.06em; padding:10px 22px;
+    border:3px double; border-radius:6px; transform:rotate(-3deg);
+    text-shadow:0 0 12px currentColor; white-space:nowrap;
+    animation:stampIn .5s var(--ease) both;
+  }
+  @keyframes stampIn{
+    from{ opacity:0; transform:rotate(6deg) scale(.7); }
+    60%{ opacity:1; transform:rotate(-5deg) scale(1.05); }
+    to{ transform:rotate(-3deg) scale(1); }
+  }
+  .stamp.buy{color:var(--catalyst); border-color:var(--catalyst);}
+  .stamp.sell{color:var(--risk); border-color:var(--risk);}
+  .stamp.hold{color:var(--narrative); border-color:var(--narrative);}
+  .meta-inline{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; line-height:1.7;}
+  .meta-inline b{color:var(--text-dim); font-weight:600;}
+
+  .tags{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px;}
+  .tag{font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:20px; border:1px solid; opacity:0; animation:tagIn .35s var(--ease) forwards;}
+  .tag.risk{color:var(--risk); border-color:rgba(229,108,88,0.35); background:var(--risk-soft);}
+  .tag.catalyst{color:var(--catalyst); border-color:rgba(95,196,138,0.35); background:var(--catalyst-soft);}
+  @keyframes tagIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .rationale{font-size:14.5px; line-height:1.68; color:var(--text);}
+
+  /* ---------- news: full-width card grid ---------- */
+  .news-section{ margin-bottom:12px; }
+  .news-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;
+    align-items:start;
+  }
+  .news-item{
+    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border:1px solid var(--hairline); border-radius:var(--radius-sm);
+    padding:18px; opacity:0; animation:fadeSlideUp .4s var(--ease) forwards;
+    transition:border-color .2s var(--ease), transform .2s var(--ease);
+  }
+  .news-item:hover{ border-color:var(--hairline-strong); transform:translateY(-2px); }
+  .news-item .headline{font-weight:600; font-size:14px; margin-bottom:8px; color:var(--text); line-height:1.35;}
+  .news-item .meta{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:9px; letter-spacing:0.02em; text-transform:uppercase;}
+  .news-item .body{font-size:12.5px; color:var(--text-dim); line-height:1.55;}
+  .news-item .read-link{
+    display:inline-flex; align-items:center; gap:5px; margin-top:12px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--quant);
+    text-decoration:none; border-bottom:1px solid transparent; transition:border-color .15s var(--ease);
+  }
+  .news-item .read-link:hover{ border-color:var(--quant); }
+
+  /* ---------- states ---------- */
+  .news-grid .empty, .news-grid .error{ grid-column:1 / -1; }
+  .empty, .error{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-faint); padding:8px 0; line-height:1.6;}
+  .error{color:var(--risk);}
+  .skeleton{ height:220px; border-radius:var(--radius-sm); background:linear-gradient(100deg, var(--surface-2) 30%, rgba(255,255,255,0.05) 50%, var(--surface-2) 70%); background-size:200% 100%; animation:shimmer 1.3s ease-in-out infinite; }
+  @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+
+  footer{margin-top:52px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); border-top:1px solid var(--hairline); padding-top:18px; letter-spacing:0.01em;}
+  footer a{color:var(--text-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand">Ledger<em>.ai</em></div>
+    <div id="api-status" class="status-pill"><span class="status-dot"></span><span class="status-label">checking…</span></div>
+  </div>
+  <div class="tagline">Quant forecast paired with narrative synthesis</div>
+  <div class="thesis-line"></div>
+
+  <div class="controls">
+    <span class="field-label">Ticker</span>
+    <select id="ticker-select"></select>
+    <button id="run-btn" class="btn-primary">Run analysis</button>
+    <button id="report-btn" class="btn-accent">Full GenAI report</button>
+  </div>
+
+  <div class="hero">
+    <div class="price-block">
+      <div class="label">Last close</div>
+      <div class="price" id="hero-price">—<span class="sub" id="hero-sub">Choose a ticker and run an analysis</span></div>
+    </div>
+    <div class="delta" id="hero-delta" style="display:none;"></div>
+  </div>
+
+  <div class="panel chart-panel" style="margin-top:22px;">
+    <div class="eyebrow">7-day LSTM forecast · median with 10th–90th percentile band</div>
+    <div id="chart-holder"><canvas id="forecast-chart" height="90"></canvas></div>
+  </div>
+
+  <div class="panel verdict-panel">
+    <div class="eyebrow narrative-eyebrow">GenAI verdict</div>
+    <div id="verdict-area"><div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div></div>
+  </div>
+
+  <div class="news-section">
+    <div class="eyebrow">Retrieved news &amp; macro context</div>
+    <div id="news-area" class="news-grid"><div class="empty">Run an analysis to pull in the news driving this ticker right now.</div></div>
+  </div>
+
+  <footer>
+    API base: <span id="api-base"></span> · Synthetic fallback data ships out of the box — see README for wiring in live sources
+  </footer>
+</div>
+
+<script>
+const API_BASE = "http://localhost:8000";
+document.getElementById("api-base").textContent = API_BASE;
+let chart = null;
+
+async function checkApi(){
+  const pill = document.getElementById("api-status");
+  const dot = pill.querySelector(".status-dot");
+  const label = pill.querySelector(".status-label");
+  try{
+    const r = await fetch(`${API_BASE}/tickers`);
+    if(!r.ok) throw new Error();
+    const data = await r.json();
+    dot.className = "status-dot ok";
+    label.textContent = "api connected";
+    return data.tickers;
+  }catch(e){
+    dot.className = "status-dot bad";
+    label.textContent = "api offline — start the backend";
+    return [];
+  }
+}
+
+async function init(){
+  const tickers = await checkApi();
+  const select = document.getElementById("ticker-select");
+  const fallback = ["AAPL","MSFT","GOOGL","NVDA","AMZN"];
+  (tickers.length ? tickers : fallback).forEach(t=>{
+    const opt = document.createElement("option");
+    opt.value = t; opt.textContent = t;
+    select.appendChild(opt);
+  });
+}
+
+function animateCount(el, from, to, duration=500, prefix="$"){
+  const start = performance.now();
+  function step(now){
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = from + (to - from) * eased;
+    el.textContent = prefix + val.toFixed(2);
+    if(t < 1) requestAnimationFrame(step);
+    else el.textContent = prefix + to.toFixed(2);
+  }
+  requestAnimationFrame(step);
+}
+
+function renderChart(forecast){
+  const holder = document.getElementById("chart-holder");
+  holder.innerHTML = '<canvas id="forecast-chart" height="90"></canvas>';
+  const ctx = document.getElementById("forecast-chart").getContext("2d");
+  const labels = forecast.forecast.map(f => f.date.slice(5));
+  const median = forecast.forecast.map(f => f.median);
+  const low = forecast.forecast.map(f => f.low_p10);
+  const high = forecast.forecast.map(f => f.high_p90);
+
+  if(chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {label:"90th pct", data:high, borderColor:"transparent", backgroundColor:"rgba(87,196,224,0.12)", fill:"+1", pointRadius:0, tension:0.35},
+        {label:"10th pct", data:low, borderColor:"transparent", backgroundColor:"rgba(87,196,224,0.12)", fill:false, pointRadius:0, tension:0.35},
+        {label:"Median forecast", data:median, borderColor:"#57C4E0", backgroundColor:"#57C4E0", borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.35},
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{ mode:"index", intersect:false },
+      animation:{ duration:700, easing:"easeOutCubic" },
+      plugins:{
+        legend:{ labels:{ color:"#9A9DA3", font:{family:"IBM Plex Mono", size:11}, boxWidth:10, usePointStyle:true } },
+        tooltip:{
+          backgroundColor:"#1B1D21", borderColor:"rgba(255,255,255,0.15)", borderWidth:1,
+          titleFont:{family:"IBM Plex Mono", size:11}, bodyFont:{family:"IBM Plex Mono", size:11},
+          padding:10, displayColors:true,
+          callbacks:{ label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
+        }
+      },
+      scales:{
+        x:{ ticks:{color:"#5B5E66", font:{family:"IBM Plex Mono", size:10}}, grid:{color:"rgba(255,255,255,0.05)"} },
+        y:{ ticks:{color:"#5B5E66", font:{family:"IBM Plex Mono", size:10}, callback:(v)=>"$"+v}, grid:{color:"rgba(255,255,255,0.05)"} }
+      }
+    }
+  });
+}
+
+function renderChartSkeleton(){
+  document.getElementById("chart-holder").innerHTML = '<div class="skeleton"></div>';
+}
+
+function renderHero(forecast){
+  const priceEl = document.getElementById("hero-price");
+  const prevText = priceEl.querySelector(".sub") ? priceEl.textContent.trim().split("$")[1]?.split(/[^0-9.]/)[0] : null;
+  const fromVal = prevText ? parseFloat(prevText) : forecast.last_close;
+  priceEl.innerHTML = `<span id="price-num">$${fromVal.toFixed(2)}</span><span class="sub">${forecast.ticker} · ${forecast.last_date}</span>`;
+  animateCount(document.getElementById("price-num"), fromVal, forecast.last_close, 500, "$");
+
+  const delta = document.getElementById("hero-delta");
+  const pct = forecast.expected_return_pct;
+  delta.style.display = "inline-block";
+  delta.classList.remove("fade-slide-in"); void delta.offsetWidth; delta.classList.add("fade-slide-in");
+  delta.textContent = `${pct > 0 ? "+" : ""}${pct}% expected · 7d`;
+  delta.className = "delta fade-slide-in " + (pct >= 0 ? "pos" : "neg");
+}
+
+function truncate(text, max=220){
+  if(!text || text.length <= max) return text || "";
+  return text.slice(0, max).replace(/\s+\S*$/, "") + "…";
+}
+
+function renderNews(news){
+  const area = document.getElementById("news-area");
+  if(!news.length){ area.innerHTML = '<div class="empty">No relevant news retrieved for this ticker right now.</div>'; return; }
+  area.innerHTML = news.map((n, i) => `
+    <div class="news-item" style="animation-delay:${i * 60}ms">
+      <div class="headline">${n.headline}</div>
+      <div class="meta">${n.ticker} · ${n.date} · relevance ${n.relevance_score}</div>
+      <div class="body">${truncate(n.text)}</div>
+      ${n.url ? `<a class="read-link" href="${n.url}" target="_blank" rel="noopener noreferrer">Read article ↗</a>` : ""}
+    </div>
+  `).join("");
+}
+
+function renderVerdict(analysis){
+  const area = document.getElementById("verdict-area");
+  const risks = (analysis.key_risks||[]).map((r,i) => `<span class="tag risk" style="animation-delay:${i*70}ms">${r}</span>`).join("");
+  const catalysts = (analysis.key_catalysts||[]).map((c,i) => `<span class="tag catalyst" style="animation-delay:${i*70}ms">${c}</span>`).join("");
+  area.innerHTML = `
+    <div class="verdict-layout">
+      <div class="verdict-left">
+        <span class="stamp ${analysis.recommendation}">${analysis.recommendation}</span>
+        <span class="meta-inline"><b>Confidence</b> ${analysis.confidence}<br><b>Sentiment</b> ${analysis.sentiment}</span>
+      </div>
+      <div class="verdict-right">
+        <div class="tags">${catalysts}${risks}</div>
+        <div class="rationale fade-slide-in" style="animation-delay:150ms">${analysis.rationale}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function runForecastOnly(){
+  const ticker = document.getElementById("ticker-select").value;
+  const btn = document.getElementById("run-btn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Running…';
+  renderChartSkeleton();
+  document.getElementById("verdict-area").innerHTML = '<div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div>';
+  try{
+    const [fRes, nRes] = await Promise.all([
+      fetch(`${API_BASE}/forecast/${ticker}`),
+      fetch(`${API_BASE}/news-analysis/${ticker}`),
+    ]);
+    if(!fRes.ok) throw new Error(`forecast request failed (${fRes.status})`);
+    const forecast = await fRes.json();
+    const newsData = await nRes.json();
+    renderHero(forecast);
+    renderChart(forecast);
+    renderNews(newsData.news || []);
+  }catch(e){
+    document.getElementById("chart-holder").innerHTML = "";
+    document.getElementById("news-area").innerHTML = `<div class="error">Couldn't load this ticker: ${e.message}. Confirm the backend is running and this ticker has been trained (python -m app.models.train).</div>`;
+  }finally{
+    btn.disabled = false; btn.innerHTML = "Run analysis";
+  }
+}
+
+async function runFullReport(){
+  const ticker = document.getElementById("ticker-select").value;
+  const btn = document.getElementById("report-btn");
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing…';
+  renderChartSkeleton();
+  document.getElementById("verdict-area").innerHTML = '<div class="empty">Reading the forecast and the news to form a view…</div>';
+  try{
+    const r = await fetch(`${API_BASE}/report/${ticker}`);
+    if(!r.ok){
+      const body = await r.json().catch(()=>({}));
+      throw new Error(body.detail || `request failed (${r.status})`);
+    }
+    const report = await r.json();
+    renderHero(report.forecast);
+    renderChart(report.forecast);
+    renderNews(report.news);
+    renderVerdict(report.analysis);
+  }catch(e){
+    document.getElementById("verdict-area").innerHTML = `<div class="error">Couldn't generate a report: ${e.message}</div>`;
+  }finally{
+    btn.disabled = false; btn.innerHTML = "Full GenAI report";
+  }
+}
+
+document.getElementById("run-btn").addEventListener("click", runForecastOnly);
+document.getElementById("report-btn").addEventListener("click", runFullReport);
+init();
+</script>
+</body>
+</html>

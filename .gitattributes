@@ -1,0 +1,2 @@
+*.pt filter=lfs diff=lfs merge=lfs -text
+backend/app/rag/faiss.index filter=lfs diff=lfs merge=lfs -text
