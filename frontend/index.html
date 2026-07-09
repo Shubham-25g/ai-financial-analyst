@@ -418,16 +418,35 @@ async function runFullReport(){
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing…';
   renderChartSkeleton();
   document.getElementById("verdict-area").innerHTML = '<div class="empty">Reading the forecast and the news to form a view…</div>';
+
+  // Fire the fast calls (forecast + news) and the slow one (full report, which
+  // includes the LLM synthesis step) in parallel — don't make the chart and
+  // news wait on the LLM call just because they're bundled in the same
+  // /report response. Render each piece the moment its own data is ready.
+  const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
+  const newsPromise = fetch(`${API_BASE}/news-analysis/${ticker}`);
+  const reportPromise = fetch(`${API_BASE}/report/${ticker}`);
+
   try{
-    const r = await fetch(`${API_BASE}/report/${ticker}`);
+    const [fRes, nRes] = await Promise.all([forecastPromise, newsPromise]);
+    if(!fRes.ok) throw new Error(`forecast request failed (${fRes.status})`);
+    const forecast = await fRes.json();
+    const newsData = await nRes.json();
+    renderHero(forecast);
+    renderChart(forecast);
+    renderNews(newsData.news || []);
+  }catch(e){
+    document.getElementById("chart-holder").innerHTML = "";
+    document.getElementById("news-area").innerHTML = `<div class="error">Couldn't load the forecast/news: ${e.message}</div>`;
+  }
+
+  try{
+    const r = await reportPromise;
     if(!r.ok){
       const body = await r.json().catch(()=>({}));
       throw new Error(body.detail || `request failed (${r.status})`);
     }
     const report = await r.json();
-    renderHero(report.forecast);
-    renderChart(report.forecast);
-    renderNews(report.news);
     renderVerdict(report.analysis);
   }catch(e){
     document.getElementById("verdict-area").innerHTML = `<div class="error">Couldn't generate a report: ${e.message}</div>`;
