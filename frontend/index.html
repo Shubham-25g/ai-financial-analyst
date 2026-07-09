@@ -3,231 +3,199 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ledger — AI Financial Analyst</title>
+<title>Ledger — Financial Analyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    /* Premium Deep Slate & Obsidian Base */
-    --ink: #08090b;
-    --surface: #0f1115;
-    --surface-2: #16191f;
-    --surface-hover: #1e222a;
-    --hairline: rgba(255, 255, 255, 0.045);
-    --hairline-strong: rgba(255, 255, 255, 0.12);
-    --text: #f3f4f6;
-    --text-dim: #94a3b8;
-    --text-faint: #475569;
+    /* Designer minimalist palette — strict, low saturation */
+    --bg: #030303;
+    --surface: #0a0a0a;
+    --border: #222222;
+    --border-hover: #383838;
     
-    /* Accents with precise luminous styling */
-    --quant: #00f0ff;
-    --quant-soft: rgba(0, 240, 255, 0.06);
-    --narrative: #ffb800;
-    --narrative-soft: rgba(255, 184, 0, 0.06);
-    --risk: #ff4b4b;
-    --risk-soft: rgba(255, 75, 75, 0.08);
-    --catalyst: #00e676;
-    --catalyst-soft: rgba(0, 230, 118, 0.08);
+    --text-primary: #ededed;
+    --text-secondary: #888888;
+    --text-tertiary: #555555;
     
-    --radius: 14px;
-    --radius-sm: 8px;
-    --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    /* Restrained semantic colors */
+    --accent: #ffffff;
+    --positive: #65b87c;
+    --positive-bg: rgba(101, 184, 124, 0.1);
+    --negative: #e56b6b;
+    --negative-bg: rgba(229, 107, 107, 0.1);
+    --neutral: #d4a76a;
+    --neutral-bg: rgba(212, 167, 106, 0.1);
+    
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
   
   body {
-    background-color: var(--ink);
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 240, 255, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(255, 184, 0, 0.02) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(15, 17, 21, 0.5) 0px, var(--ink) 100%);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    line-height: 1.5;
   }
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--ink); }
-  ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-  @media (prefers-reduced-motion: reduce) { * { animation-duration: .001s !important; transition-duration: .001s !important; } }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 60px 24px 80px; animation: fadeIn .6s var(--ease) both; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 60px; animation: pageIn .8s var(--ease) both; }
-  @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-
-  /* ---------- Top Navigation / Masthead ---------- */
+  /* ---------- Header / Masthead ---------- */
   .header-container {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--hairline);
-    padding-bottom: 24px;
-    margin-bottom: 32px;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 24px;
   }
-  .brand { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .brand em { font-style: normal; background: linear-gradient(135deg, var(--quant), #00a8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .tagline { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8; }
+  .brand-group { display: flex; flex-direction: column; gap: 4px; }
+  .brand { font-family: 'Newsreader', serif; font-size: 28px; font-weight: 500; letter-spacing: -0.02em; color: var(--text-primary); }
+  .tagline { font-size: 12px; color: var(--text-secondary); letter-spacing: 0.02em; }
   
-  .status-pill { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); padding: 8px 14px; background: var(--surface); border: 1px solid var(--hairline-strong); border-radius: 30px; }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
-  .status-dot.ok { background: var(--catalyst); box-shadow: 0 0 10px var(--catalyst); animation: pulseDot 2s ease-out infinite; }
-  .status-dot.bad { background: var(--risk); box-shadow: 0 0 10px var(--risk); }
-  @keyframes pulseDot {
-    0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.5); }
-    70% { box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
-  }
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-tertiary); }
+  .status-dot.ok { background: var(--positive); }
+  .status-dot.bad { background: var(--negative); }
 
   /* ---------- Action & Controls Bar ---------- */
   .control-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    padding: 16px 24px;
-    margin-bottom: 32px;
+    margin-bottom: 48px;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 24px;
   }
-  .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
-  .field-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .field-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-right: 4px; }
   
   select {
-    font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--surface-2);
-    color: var(--text); border: 1px solid var(--hairline-strong); padding: 10px 36px 10px 16px; border-radius: var(--radius-sm);
-    cursor: pointer; appearance: none; transition: all .2s var(--ease); font-weight: 500;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 14px center;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; background: var(--bg);
+    color: var(--text-primary); border: 1px solid var(--border); padding: 8px 32px 8px 12px; border-radius: 4px;
+    cursor: pointer; appearance: none; transition: border-color .2s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888888' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
   }
-  select:hover { border-color: var(--quant); background-color: var(--surface-hover); }
-  select:focus-visible, button:focus-visible { outline: 2px solid var(--quant); outline-offset: 2px; }
+  select:hover { border-color: var(--text-tertiary); }
+  select:focus-visible, button:focus-visible { outline: none; border-color: var(--accent); }
 
   button {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600;
-    border: none; border-radius: var(--radius-sm); padding: 11px 20px; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.01em;
-    transition: all .2s var(--ease);
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+    border: 1px solid transparent; border-radius: 4px; padding: 8px 16px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .2s ease;
   }
-  button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
-  button:active:not(:disabled) { transform: translateY(0); }
-  button:disabled { opacity: 0.4; cursor: wait; }
+  button:active:not(:disabled) { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: wait; }
   
-  .btn-primary { background: var(--text); color: var(--ink); }
-  .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1); }
-  .btn-accent { background: rgba(255, 184, 0, 0.1); color: var(--narrative); border: 1px solid rgba(255, 184, 0, 0.2); }
-  .btn-accent:hover:not(:disabled) { background: var(--narrative); color: var(--ink); box-shadow: 0 8px 24px rgba(255, 184, 0, 0.15); }
-  .spinner { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; animation: spin .6s linear infinite; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover:not(:disabled) { background: #e0e0e0; }
+  
+  .btn-accent { background: transparent; color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-accent:hover:not(:disabled) { border-color: var(--text-secondary); }
+  
+  .spinner { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(128,128,128,0.3); border-top-color: currentColor; animation: spin .6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ---------- Performance Metric Hero ---------- */
-  .hero { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-  .price-block .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .price { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; display: flex; align-items: baseline; gap: 14px; }
-  .price .sub { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-faint); font-weight: 400; letter-spacing: 0; }
-  .delta { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; padding: 8px 16px; border-radius: 30px; letter-spacing: -0.01em; }
-  .delta.pos { color: var(--catalyst); background: var(--catalyst-soft); border: 1px solid rgba(0, 230, 118, 0.15); }
-  .delta.neg { color: var(--risk); background: var(--risk-soft); border: 1px solid rgba(255, 75, 75, 0.15); }
+  /* ---------- Metric Hero ---------- */
+  .hero { margin-bottom: 40px; display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+  .price-block { display: flex; flex-direction: column; gap: 4px; }
+  .price-block .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  .price { font-family: 'Newsreader', serif; font-size: 56px; font-weight: 400; letter-spacing: -0.03em; line-height: 1; display: flex; align-items: baseline; gap: 16px; }
+  .price .sub { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); font-weight: 400; letter-spacing: 0; margin-left: 4px; }
   
-  .fade-slide-in { animation: fadeSlideUp .5s var(--ease) both; }
-  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .delta { font-size: 13px; font-weight: 500; padding: 4px 10px; border-radius: 4px; }
+  .delta.pos { color: var(--positive); background: var(--positive-bg); }
+  .delta.neg { color: var(--negative); background: var(--negative-bg); }
 
-  /* ---------- Grid & Structural Panels ---------- */
-  .grid-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; margin-bottom: 32px; }
-  @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+  /* ---------- Stacked Layout ---------- */
+  .stacked-layout { display: flex; flex-direction: column; gap: 24px; margin-bottom: 48px; }
 
   .panel {
     background: var(--surface);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
+    border: 1px solid var(--border);
+    padding: 32px;
   }
   
-  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--quant); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
-  .eyebrow::before { content: ''; width: 4px; height: 4px; background: var(--quant); border-radius: 50%; box-shadow: 0 0 8px var(--quant); }
-  .eyebrow.narrative-eyebrow { color: var(--narrative); }
-  .eyebrow.narrative-eyebrow::before { background: var(--narrative); box-shadow: 0 0 8px var(--narrative); }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); margin-bottom: 24px; font-weight: 500; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
 
-  /* ---------- Verdict & Signal Panel ---------- */
-  .verdict-layout { display: flex; flex-direction: column; gap: 20px; height: 100%; }
-  .verdict-top { display: flex; align-items: center; gap: 20px; justify-content: space-between; border-bottom: 1px solid var(--hairline); padding-bottom: 18px; flex-wrap: wrap; }
+  /* ---------- Verdict Wide Layout ---------- */
+  .verdict-layout { display: grid; grid-template-columns: 200px 1fr; gap: 40px; align-items: start; }
+  @media (max-width: 768px) { .verdict-layout { grid-template-columns: 1fr; gap: 24px; } }
+  
+  .verdict-side { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .verdict-main { display: flex; flex-direction: column; gap: 20px; }
   
   .stamp {
-    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px;
-    text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 14px;
-    border-radius: var(--radius-sm); border: 1px solid;
-    animation: stampIn 0.4s var(--ease) both;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; 
+    padding: 4px 10px; border-radius: 2px; border: 1px solid;
   }
-  @keyframes stampIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-  .stamp.buy { color: var(--catalyst); border-color: rgba(0, 230, 118, 0.3); background: var(--catalyst-soft); }
-  .stamp.sell { color: var(--risk); border-color: rgba(255, 75, 75, 0.3); background: var(--risk-soft); }
-  .stamp.hold { color: var(--narrative); border-color: rgba(255, 184, 0, 0.3); background: var(--narrative-soft); }
+  .stamp.buy { color: var(--positive); border-color: var(--positive); background: transparent; }
+  .stamp.sell { color: var(--negative); border-color: var(--negative); background: transparent; }
+  .stamp.hold { color: var(--neutral); border-color: var(--neutral); background: transparent; }
   
-  .meta-inline { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; }
-  .meta-inline b { color: var(--text); font-weight: 500; }
+  .meta-stacked { font-size: 12px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px; }
+  .meta-stacked b { color: var(--text-primary); font-weight: 500; }
 
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1px solid; opacity: 0; animation: tagIn .35s var(--ease) forwards; }
-  .tag.risk { color: var(--risk); border-color: rgba(255, 75, 75, 0.15); background: rgba(255, 75, 75, 0.03); }
-  .tag.catalyst { color: var(--catalyst); border-color: rgba(0, 230, 118, 0.15); background: rgba(0, 230, 118, 0.03); }
-  @keyframes tagIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); }
+  
+  .rationale { font-size: 15px; line-height: 1.7; color: var(--text-primary); max-width: 800px; }
 
-  .rationale { font-size: 14px; line-height: 1.6; color: var(--text-dim); }
-
-  /* ---------- News Feed Section ---------- */
-  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  /* ---------- News Section ---------- */
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .news-item {
-    background: var(--surface-2);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-sm);
-    padding: 20px; opacity: 0; animation: fadeSlideUp .4s var(--ease) forwards;
-    transition: all .25s var(--ease);
+    background: var(--surface);
+    padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    transition: background .2s ease;
   }
-  .news-item:hover { border-color: var(--hairline-strong); background: var(--surface-hover); transform: translateY(-2px); }
-  .news-item .headline { font-weight: 600; font-size: 14.5px; margin-bottom: 10px; color: var(--text); line-height: 1.4; letter-spacing: -0.01em; }
-  .news-item .meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); margin-bottom: 12px; opacity: 0.75; }
-  .news-item .body { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+  .news-item:hover { background: var(--bg); }
+  .news-item .headline { font-weight: 500; font-size: 14px; margin-bottom: 12px; color: var(--text-primary); line-height: 1.5; }
+  .news-item .meta { font-size: 11px; color: var(--text-tertiary); margin-bottom: 12px; font-family: monospace; }
+  .news-item .body { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px; }
   .news-item .read-link {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--quant);
-    text-decoration: none; font-weight: 500; transition: color .15s ease;
+    display: inline-flex; font-size: 12px; color: var(--text-primary);
+    text-decoration: underline; text-decoration-color: var(--border);
+    text-underline-offset: 4px; font-weight: 400; transition: text-decoration-color .2s ease;
   }
-  .news-item .read-link:hover { color: var(--text); }
+  .news-item .read-link:hover { text-decoration-color: var(--text-primary); }
 
-  /* ---------- Empty, Error, Skeleton States ---------- */
-  .empty, .error { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-faint); padding: 24px 0; line-height: 1.6; text-align: center; width: 100%; margin: auto; }
-  .error { color: var(--risk); }
-  .skeleton { height: 260px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-hover) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
+  /* ---------- States ---------- */
+  .empty, .error { font-size: 13px; color: var(--text-secondary); padding: 12px 0; line-height: 1.6; }
+  .error { color: var(--negative); }
+  .skeleton { height: 260px; background: linear-gradient(90deg, var(--surface) 25%, var(--bg) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  footer { margin-top: 60px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); border-top: 1px solid var(--hairline); padding-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-  footer a { color: var(--text-dim); text-decoration: none; }
-  footer a:hover { color: var(--text); }
+  footer { margin-top: 80px; font-size: 12px; color: var(--text-tertiary); border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  footer a { color: var(--text-secondary); text-decoration: none; }
+  footer a:hover { color: var(--text-primary); }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <div class="header-container">
-    <div>
-      <div class="brand">Ledger<em>.ai</em></div>
-      <div class="tagline">Quant forecast paired with narrative synthesis</div>
+    <div class="brand-group">
+      <div class="brand">Ledger.</div>
+      <div class="tagline">Quantitative forecast & narrative synthesis</div>
     </div>
     <div id="api-status" class="status-pill">
       <span class="status-dot"></span>
@@ -237,49 +205,49 @@
 
   <div class="control-bar">
     <div class="controls">
-      <span class="field-label">Ticker Matrix</span>
+      <span class="field-label">Asset</span>
       <select id="ticker-select"></select>
     </div>
     <div class="controls">
-      <button id="run-btn" class="btn-primary">Run analysis</button>
-      <button id="report-btn" class="btn-accent">Full GenAI report</button>
+      <button id="run-btn" class="btn-accent">Run Analysis</button>
+      <button id="report-btn" class="btn-primary">Generate Report</button>
     </div>
   </div>
 
   <div class="hero">
     <div class="price-block">
-      <div class="label">Last Market Close</div>
-      <div class="price" id="hero-price">—<span class="sub" id="hero-sub">Choose a ticker and run an analysis</span></div>
+      <div class="label">Latest Close</div>
+      <div class="price" id="hero-price">—<span class="sub" id="hero-sub">Select an asset to begin</span></div>
     </div>
     <div class="delta" id="hero-delta" style="display:none;"></div>
   </div>
 
-  <div class="grid-layout">
+  <div class="stacked-layout">
     <div class="panel chart-panel">
-      <div class="eyebrow">7-day LSTM forecast · median with 10th–90th percentile band</div>
-      <div id="chart-holder" style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 260px;">
-        <canvas id="forecast-chart" height="110"></canvas>
+      <div class="eyebrow">7-Day LSTM Forecast (Median / 10th–90th Pct)</div>
+      <div id="chart-holder" style="width: 100%; display: flex; align-items: center; justify-content: center; min-height: 280px;">
+        <canvas id="forecast-chart" height="120"></canvas>
       </div>
     </div>
 
     <div class="panel verdict-panel">
-      <div class="eyebrow narrative-eyebrow">GenAI verdict</div>
-      <div id="verdict-area" style="flex: 1; display: flex;">
-        <div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div>
+      <div class="eyebrow">Executive Summary</div>
+      <div id="verdict-area" style="width: 100%;">
+        <div class="empty">Generate a report to view synthesis across quantitative targets and retrieved market narratives.</div>
       </div>
     </div>
   </div>
 
-  <div class="panel" style="margin-bottom: 24px;">
-    <div class="eyebrow" style="color: var(--text-dim);">Retrieved news &amp; macro context</div>
-    <div id="news-area" class="news-grid">
-      <div class="empty">Run an analysis to pull in the news driving this ticker right now.</div>
+  <div style="margin-bottom: 24px;">
+    <div class="eyebrow">Market Context & News</div>
+    <div id="news-area" class="news-grid" style="border:none; background:transparent;">
+      <div class="empty">Run an analysis to retrieve driving narratives.</div>
     </div>
   </div>
 
   <footer>
-    <div>API base: <span id="api-base" style="color: var(--text-dim);"></span></div>
-    <div>Synthetic fallback engine active · <a href="#">Read Documentation</a></div>
+    <div>API Endpoint: <span id="api-base" style="color: var(--text-secondary);"></span></div>
+    <div>System running in fallback mode by default. <a href="#">Documentation</a></div>
   </footer>
 </div>
 
@@ -299,11 +267,11 @@ async function checkApi(){
     if(!r.ok) throw new Error();
     const data = await r.json();
     dot.className = "status-dot ok";
-    label.textContent = "api connected";
+    label.textContent = "Connected";
     return data.tickers;
   }catch(e){
     dot.className = "status-dot bad";
-    label.textContent = "api offline — start the backend";
+    label.textContent = "Offline";
     return [];
   }
 }
@@ -334,7 +302,7 @@ function animateCount(el, from, to, duration=500, prefix="$"){
 
 function renderChart(forecast){
   const holder = document.getElementById("chart-holder");
-  holder.innerHTML = '<canvas id="forecast-chart" height="110"></canvas>';
+  holder.innerHTML = '<canvas id="forecast-chart" height="120"></canvas>';
   const ctx = document.getElementById("forecast-chart").getContext("2d");
   const labels = forecast.forecast.map(f => f.date.slice(5));
   const median = forecast.forecast.map(f => f.median);
@@ -347,28 +315,28 @@ function renderChart(forecast){
     data: {
       labels,
       datasets: [
-        {label:"90th pct", data:high, borderColor:"transparent", backgroundColor:"rgba(0, 240, 255, 0.05)", fill:"+1", pointRadius:0, tension:0.35},
-        {label:"10th pct", data:low, borderColor:"transparent", backgroundColor:"rgba(0, 240, 255, 0.05)", fill:false, pointRadius:0, tension:0.35},
-        {label:"Median forecast", data:median, borderColor:"#00f0ff", backgroundColor:"#00f0ff", borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.35},
+        {label:"90th pct", data:high, borderColor:"transparent", backgroundColor:"rgba(255, 255, 255, 0.04)", fill:"+1", pointRadius:0, tension:0.2},
+        {label:"10th pct", data:low, borderColor:"transparent", backgroundColor:"rgba(255, 255, 255, 0.04)", fill:false, pointRadius:0, tension:0.2},
+        {label:"Median", data:median, borderColor:"#ffffff", backgroundColor:"#ffffff", borderWidth:1.5, pointRadius:2, pointHoverRadius:4, tension:0.2},
       ]
     },
     options:{
       responsive:true,
       maintainAspectRatio:false,
       interaction:{ mode:"index", intersect:false },
-      animation:{ duration:700, easing:"easeOutCubic" },
+      animation:{ duration:600, easing:"easeOutQuart" },
       plugins:{
-        legend:{ labels:{ color:"#94a3b8", font:{family:"JetBrains Mono", size:11}, boxWidth:10, usePointStyle:true } },
+        legend:{ display: false },
         tooltip:{
-          backgroundColor:"#16191f", borderColor:"rgba(255,255,255,0.1)", borderWidth:1,
-          titleFont:{family:"JetBrains Mono", size:11}, bodyFont:{family:"JetBrains Mono", size:11},
-          padding:10, displayColors:true,
-          callbacks:{ label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
+          backgroundColor:"#000000", borderColor:"#333333", borderWidth:1,
+          titleFont:{family:"Inter", size:12}, bodyFont:{family:"Inter", size:12},
+          padding:12, displayColors:false, cornerRadius: 4,
+          callbacks:{ label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
         }
       },
       scales:{
-        x:{ ticks:{color:"#475569", font:{family:"JetBrains Mono", size:10}}, grid:{color:"rgba(255,255,255,0.02)"} },
-        y:{ ticks:{color:"#475569", font:{family:"JetBrains Mono", size:10}, callback:(v)=>"$"+v}, grid:{color:"rgba(255,255,255,0.02)"} }
+        x:{ ticks:{color:"#555555", font:{family:"Inter", size:11}}, grid:{color:"transparent"} },
+        y:{ ticks:{color:"#555555", font:{family:"Inter", size:11}, callback:(v)=>"$"+v}, grid:{color:"rgba(255,255,255,0.05)", drawBorder: false} }
       }
     }
   });
@@ -382,49 +350,59 @@ function renderHero(forecast){
   const priceEl = document.getElementById("hero-price");
   const prevText = priceEl.querySelector(".sub") ? priceEl.textContent.trim().split("$")[1]?.split(/[^0-9.]/)[0] : null;
   const fromVal = prevText ? parseFloat(prevText) : forecast.last_close;
-  priceEl.innerHTML = `<span id="price-num">$${fromVal.toFixed(2)}</span><span class="sub">${forecast.ticker} · ${forecast.last_date}</span>`;
+  priceEl.innerHTML = `<span id="price-num">$${fromVal.toFixed(2)}</span><span class="sub">${forecast.ticker} / ${forecast.last_date}</span>`;
   animateCount(document.getElementById("price-num"), fromVal, forecast.last_close, 500, "$");
 
   const delta = document.getElementById("hero-delta");
   const pct = forecast.expected_return_pct;
   delta.style.display = "inline-block";
-  delta.classList.remove("fade-slide-in"); void delta.offsetWidth; delta.classList.add("fade-slide-in");
-  delta.textContent = `${pct > 0 ? "+" : ""}${pct}% expected · 7d`;
-  delta.className = "delta fade-slide-in " + (pct >= 0 ? "pos" : "neg");
+  delta.textContent = `${pct > 0 ? "+" : ""}${pct}% (7d projection)`;
+  delta.className = "delta " + (pct >= 0 ? "pos" : "neg");
 }
 
-function truncate(text, max=220){
+function truncate(text, max=200){
   if(!text || text.length <= max) return text || "";
   return text.slice(0, max).replace(/\s+\S*$/, "") + "…";
 }
 
 function renderNews(news){
   const area = document.getElementById("news-area");
-  if(!news.length){ area.innerHTML = '<div class="empty">No relevant news retrieved for this ticker right now.</div>'; return; }
-  area.innerHTML = news.map((n, i) => `
-    <div class="news-item" style="animation-delay:${i * 60}ms">
+  if(!news.length){ area.innerHTML = '<div class="empty">No relevant news retrieved.</div>'; area.style.background = 'transparent'; area.style.border = 'none'; return; }
+  
+  area.style.background = 'var(--border)';
+  area.style.border = '1px solid var(--border)';
+  
+  area.innerHTML = news.map((n) => `
+    <div class="news-item">
       <div>
         <div class="headline">${n.headline}</div>
-        <div class="meta">${n.ticker} · ${n.date} · relevance ${n.relevance_score}</div>
+        <div class="meta">${n.date} &mdash; Relevance: ${n.relevance_score}</div>
         <div class="body">${truncate(n.text)}</div>
       </div>
-      ${n.url ? `<a class="read-link" href="${n.url}" target="_blank" rel="noopener noreferrer">Read article ↗</a>` : ""}
+      ${n.url ? `<div><a class="read-link" href="${n.url}" target="_blank" rel="noopener noreferrer">Source article</a></div>` : ""}
     </div>
   `).join("");
 }
 
 function renderVerdict(analysis){
   const area = document.getElementById("verdict-area");
-  const risks = (analysis.key_risks||[]).map((r,i) => `<span class="tag risk" style="animation-delay:${i*70}ms">${r}</span>`).join("");
-  const catalysts = (analysis.key_catalysts||[]).map((c,i) => `<span class="tag catalyst" style="animation-delay:${i*70}ms">${c}</span>`).join("");
+  const risks = (analysis.key_risks||[]).map(r => `<span class="tag">${r}</span>`).join("");
+  const catalysts = (analysis.key_catalysts||[]).map(c => `<span class="tag">${c}</span>`).join("");
+  
+  // Notice the modified HTML structure to fit the new internal grid
   area.innerHTML = `
     <div class="verdict-layout">
-      <div class="verdict-top">
+      <div class="verdict-side">
         <span class="stamp ${analysis.recommendation}">${analysis.recommendation}</span>
-        <span class="meta-inline"><span>Conf: <b>${analysis.confidence}</b></span> <span>Sent: <b>${analysis.sentiment}</b></span></span>
+        <div class="meta-stacked">
+          <div>Confidence: <b>${analysis.confidence}</b></div>
+          <div>Sentiment: <b>${analysis.sentiment}</b></div>
+        </div>
       </div>
-      <div class="tags">${catalysts}${risks}</div>
-      <div class="rationale fade-slide-in" style="animation-delay:150ms">${analysis.rationale}</div>
+      <div class="verdict-main">
+        <div class="rationale">${analysis.rationale}</div>
+        <div class="tags">${catalysts}${risks}</div>
+      </div>
     </div>
   `;
 }
@@ -432,15 +410,15 @@ function renderVerdict(analysis){
 async function runForecastOnly(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("run-btn");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Running…';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing';
   renderChartSkeleton();
-  document.getElementById("verdict-area").innerHTML = '<div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div>';
+  document.getElementById("verdict-area").innerHTML = '<div class="empty">Generate a report to view synthesis across quantitative targets and retrieved market narratives.</div>';
   try{
     const [fRes, nRes] = await Promise.all([
       fetch(`${API_BASE}/forecast/${ticker}`),
       fetch(`${API_BASE}/news-analysis/${ticker}`),
     ]);
-    if(!fRes.ok) throw new Error(`forecast request failed (${fRes.status})`);
+    if(!fRes.ok) throw new Error(`Data retrieval failed (${fRes.status})`);
     const forecast = await fRes.json();
     const newsData = await nRes.json();
     renderHero(forecast);
@@ -448,18 +426,18 @@ async function runForecastOnly(){
     renderNews(newsData.news || []);
   }catch(e){
     document.getElementById("chart-holder").innerHTML = "";
-    document.getElementById("news-area").innerHTML = `<div class="error">Couldn't load this ticker: ${e.message}. Confirm the backend is running and this ticker has been trained (python -m app.models.train).</div>`;
+    document.getElementById("news-area").innerHTML = `<div class="error">Error loading data: ${e.message}</div>`;
   }finally{
-    btn.disabled = false; btn.innerHTML = "Run analysis";
+    btn.disabled = false; btn.innerHTML = "Run Analysis";
   }
 }
 
 async function runFullReport(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("report-btn");
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing…';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing';
   renderChartSkeleton();
-  document.getElementById("verdict-area").innerHTML = '<div class="empty">Reading the forecast and the news to form a view…</div>';
+  document.getElementById("verdict-area").innerHTML = '<div class="empty" style="color: var(--text-tertiary);">LLM synthesizing market context...</div>';
 
   const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
   const newsPromise = fetch(`${API_BASE}/news-analysis/${ticker}`);
@@ -467,7 +445,7 @@ async function runFullReport(){
 
   try{
     const [fRes, nRes] = await Promise.all([forecastPromise, newsPromise]);
-    if(!fRes.ok) throw new Error(`forecast request failed (${fRes.status})`);
+    if(!fRes.ok) throw new Error(`Forecast request failed (${fRes.status})`);
     const forecast = await fRes.json();
     const newsData = await nRes.json();
     renderHero(forecast);
@@ -475,21 +453,21 @@ async function runFullReport(){
     renderNews(newsData.news || []);
   }catch(e){
     document.getElementById("chart-holder").innerHTML = "";
-    document.getElementById("news-area").innerHTML = `<div class="error">Couldn't load the forecast/news: ${e.message}</div>`;
+    document.getElementById("news-area").innerHTML = `<div class="error">Data error: ${e.message}</div>`;
   }
 
   try{
     const r = await reportPromise;
     if(!r.ok){
       const body = await r.json().catch(()=>({}));
-      throw new Error(body.detail || `request failed (${r.status})`);
+      throw new Error(body.detail || `Request failed (${r.status})`);
     }
     const report = await r.json();
     renderVerdict(report.analysis);
   }catch(e){
-    document.getElementById("verdict-area").innerHTML = `<div class="error">Couldn't generate a report: ${e.message}</div>`;
+    document.getElementById("verdict-area").innerHTML = `<div class="error">Synthesis failed: ${e.message}</div>`;
   }finally{
-    btn.disabled = false; btn.innerHTML = "Full GenAI report";
+    btn.disabled = false; btn.innerHTML = "Generate Report";
   }
 }
 
