@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    /* Refined Professional Palette — Deep graphite with subtle color tints */
+    /* Refined Professional Palette */
     --bg: #0b0c10;
     --surface: #14161a;
     --border: #282b33;
@@ -20,7 +20,7 @@
     --text-secondary: #9ba1a6;
     --text-tertiary: #686e75;
     
-    /* Muted, professional semantic colors */
+    /* Muted semantic colors */
     --accent: #5d9cec;
     --positive: #57b77d;
     --positive-bg: rgba(87, 183, 125, 0.12);
@@ -43,7 +43,6 @@
     color: var(--text-primary);
     font-family: 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     line-height: 1.5;
   }
@@ -54,7 +53,7 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
   .wrap { max-width: 1100px; margin: 0 auto; padding: 50px 24px 80px; animation: fadeIn .6s var(--ease) both; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   /* ---------- Header / Masthead ---------- */
   .header-container {
@@ -135,21 +134,12 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.2);
   }
   
-  /* Shared Panel Header */
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px;
-    transition: margin-bottom 0.4s var(--ease), padding-bottom 0.4s var(--ease);
-  }
-  
-  /* When expanded, add spacing below the header */
-  .panel-header.active {
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 16px;
-    margin-bottom: 24px;
   }
   
   .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; }
@@ -158,26 +148,36 @@
   .delta.pos { color: var(--positive); background: var(--positive-bg); border: 1px solid var(--positive-border); }
   .delta.neg { color: var(--negative); background: var(--negative-bg); border: 1px solid var(--negative-border); }
 
-  /* Expanding Containers (Strict control over height to prevent huge empty gaps) */
-  .expandable-content {
-    width: 100%;
-    height: 32px; /* Small resting height for the "empty" text */
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    transition: height 0.5s var(--ease);
+  /* --- SMOOTH EXPANSION TRICK --- */
+  .collapsible-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.5s var(--ease);
+  }
+  
+  .collapsible-wrapper.open {
+    grid-template-rows: 1fr;
+  }
+  
+  .collapsible-inner {
     overflow: hidden;
   }
   
-  .expandable-content.expanded-chart {
-    height: 280px; /* Full height for chart */
-    justify-content: center;
+  .collapsible-content {
+    /* Margin applied here so it completely disappears when grid collapses */
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
   }
 
-  .expandable-content.expanded-verdict {
-    height: auto; /* Lets the AI text dictate the height */
-    min-height: 120px;
-    align-items: flex-start;
+  /* Specific fixed height wrapper to prevent Chart.js from glitching dimensions */
+  .chart-box {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* ---------- Verdict Wide Layout ---------- */
@@ -206,7 +206,7 @@
   .rationale { font-size: 15px; line-height: 1.7; color: var(--text-primary); max-width: 800px; }
 
   /* ---------- News Section ---------- */
-  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 16px;}
   .news-item {
     background: var(--surface);
     padding: 28px;
@@ -228,7 +228,7 @@
   /* ---------- States ---------- */
   .empty, .error { font-size: 13px; color: var(--text-tertiary); line-height: 1.6; }
   .error { color: var(--negative); }
-  .skeleton { height: 100%; width: 100%; background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 2s infinite linear; border-radius: 6px; }
+  .skeleton { height: 100%; width: 100%; background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 2s infinite linear; border-radius: 6px; min-height: 120px; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   footer { margin-top: 80px; font-size: 12px; color: var(--text-tertiary); border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -265,7 +265,8 @@
     <div class="price-block">
       <div class="label">Latest Close</div>
       <div class="price" id="hero-price">
-        <span id="price-num">—</span><span class="sub" id="hero-sub">Select an asset to begin</span>
+        <span id="price-num" style="opacity: 0.25;">$0.00</span>
+        <span class="sub" id="hero-sub">Select an asset to begin</span>
       </div>
     </div>
   </div>
@@ -273,31 +274,41 @@
   <div class="stacked-layout">
     
     <div class="panel chart-panel">
-      <div class="panel-header" id="chart-header">
+      <div class="panel-header">
         <div class="eyebrow">7-Day LSTM Forecast (Median / 10th–90th Pct)</div>
         <div class="delta" id="hero-delta" style="display:none;"></div>
       </div>
       
-      <div id="chart-holder" class="expandable-content">
-        <div class="empty">Ready for analysis.</div>
+      <div class="collapsible-wrapper" id="chart-wrapper">
+        <div class="collapsible-inner">
+          <div class="collapsible-content" id="chart-holder">
+            </div>
+        </div>
       </div>
     </div>
 
     <div class="panel verdict-panel">
-      <div class="panel-header" id="verdict-header">
+      <div class="panel-header">
         <div class="eyebrow">Executive Summary</div>
       </div>
       
-      <div id="verdict-area" class="expandable-content">
-        <div class="empty">Ready for synthesis.</div>
+      <div class="collapsible-wrapper" id="verdict-wrapper">
+        <div class="collapsible-inner">
+          <div class="collapsible-content" id="verdict-area">
+            </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div style="margin-bottom: 24px;">
-    <div class="eyebrow" style="margin-bottom: 16px; border:none;">Market Context & News</div>
-    <div id="news-area" class="news-grid" style="border:none; background:transparent;">
-      <div class="empty" style="padding: 12px 0;">Run an analysis to retrieve driving narratives.</div>
+    <div class="eyebrow" style="border:none;">Market Context & News</div>
+    
+    <div class="collapsible-wrapper" id="news-wrapper">
+      <div class="collapsible-inner">
+        <div id="news-area" class="news-grid">
+          </div>
+      </div>
     </div>
   </div>
 
@@ -358,7 +369,9 @@ function animateCount(el, from, to, duration=500, prefix="$"){
 
 function renderChart(forecast){
   const holder = document.getElementById("chart-holder");
-  holder.innerHTML = '<canvas id="forecast-chart" style="height:100%; width:100%;"></canvas>';
+  // Wrap canvas in explicit chart-box to prevent glitchy height calculations
+  holder.innerHTML = '<div class="chart-box"><canvas id="forecast-chart"></canvas></div>';
+  
   const ctx = document.getElementById("forecast-chart").getContext("2d");
   const labels = forecast.forecast.map(f => f.date.slice(5));
   const median = forecast.forecast.map(f => f.median);
@@ -402,6 +415,9 @@ function renderHero(forecast){
   const priceNumEl = document.getElementById("price-num");
   const subEl = document.getElementById("hero-sub");
   
+  // Remove the faded opacity once data arrives
+  priceNumEl.style.opacity = '1';
+  
   const prevText = priceNumEl.textContent.replace(/[^0-9.]/g, "");
   const fromVal = prevText ? parseFloat(prevText) : forecast.last_close;
   
@@ -422,10 +438,10 @@ function truncate(text, max=200){
 
 function renderNews(news){
   const area = document.getElementById("news-area");
-  if(!news.length){ area.innerHTML = '<div class="empty" style="padding: 12px 0;">No relevant news retrieved.</div>'; area.style.background = 'transparent'; area.style.border = 'none'; return; }
-  
-  area.style.background = 'var(--border)';
-  area.style.border = '1px solid var(--border)';
+  if(!news.length){ 
+    area.innerHTML = '<div class="empty" style="padding: 24px;">No relevant news retrieved.</div>'; 
+    return; 
+  }
   
   area.innerHTML = news.map((n) => `
     <div class="news-item">
@@ -462,25 +478,28 @@ function renderVerdict(analysis){
   `;
 }
 
+// Wrapper expansion logic
+function openSection(id) {
+  document.getElementById(id).classList.add("open");
+}
+function closeSection(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
 async function runForecastOnly(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("run-btn");
   
-  // UI Expand Handlers
-  const chartHolder = document.getElementById("chart-holder");
-  const chartHeader = document.getElementById("chart-header");
-  
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing';
   
-  // Expand Chart Panel Layout
-  chartHeader.classList.add("active");
-  chartHolder.classList.add("expanded-chart");
-  chartHolder.innerHTML = '<div class="skeleton"></div>';
+  // Slide open Chart & News, Close Verdict
+  openSection("chart-wrapper");
+  openSection("news-wrapper");
+  closeSection("verdict-wrapper");
   
-  // Reset Verdict
-  document.getElementById("verdict-area").innerHTML = '<div class="empty">Generate a report to view synthesis across quantitative targets and retrieved market narratives.</div>';
-  document.getElementById("verdict-area").classList.remove("expanded-verdict");
-  document.getElementById("verdict-header").classList.remove("active");
+  // Inject Skeletons
+  document.getElementById("chart-holder").innerHTML = '<div class="chart-box"><div class="skeleton"></div></div>';
+  document.getElementById("news-area").innerHTML = '<div class="news-item"><div class="skeleton"></div></div><div class="news-item"><div class="skeleton"></div></div>';
 
   try{
     const [fRes, nRes] = await Promise.all([
@@ -494,10 +513,8 @@ async function runForecastOnly(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    chartHolder.innerHTML = '<div class="empty">Error loading quantitative forecast.</div>';
-    chartHolder.classList.remove("expanded-chart");
-    chartHeader.classList.remove("active");
-    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 12px 0;">Error loading data: ${e.message}</div>`;
+    document.getElementById("chart-holder").innerHTML = '<div class="empty">Error loading quantitative forecast.</div>';
+    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 24px;">Error loading data: ${e.message}</div>`;
   }finally{
     btn.disabled = false; btn.innerHTML = "Run Analysis";
   }
@@ -507,22 +524,17 @@ async function runFullReport(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("report-btn");
   
-  // UI Expand Handlers
-  const chartHolder = document.getElementById("chart-holder");
-  const chartHeader = document.getElementById("chart-header");
-  const verdictArea = document.getElementById("verdict-area");
-  const verdictHeader = document.getElementById("verdict-header");
-  
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing';
   
-  // Expand ALL Panels
-  chartHeader.classList.add("active");
-  chartHolder.classList.add("expanded-chart");
-  chartHolder.innerHTML = '<div class="skeleton"></div>';
+  // Slide open ALL sections
+  openSection("chart-wrapper");
+  openSection("verdict-wrapper");
+  openSection("news-wrapper");
   
-  verdictHeader.classList.add("active");
-  verdictArea.classList.add("expanded-verdict");
-  verdictArea.innerHTML = '<div class="empty" style="color: var(--accent);">LLM reading market context...</div>';
+  // Inject Skeletons
+  document.getElementById("chart-holder").innerHTML = '<div class="chart-box"><div class="skeleton"></div></div>';
+  document.getElementById("verdict-area").innerHTML = '<div class="skeleton" style="min-height: 140px;"></div>';
+  document.getElementById("news-area").innerHTML = '<div class="news-item"><div class="skeleton"></div></div><div class="news-item"><div class="skeleton"></div></div>';
 
   const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
   const newsPromise = fetch(`${API_BASE}/news-analysis/${ticker}`);
@@ -537,10 +549,8 @@ async function runFullReport(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    chartHolder.innerHTML = '<div class="empty">Error loading quantitative forecast.</div>';
-    chartHolder.classList.remove("expanded-chart");
-    chartHeader.classList.remove("active");
-    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 12px 0;">Data error: ${e.message}</div>`;
+    document.getElementById("chart-holder").innerHTML = '<div class="empty">Error loading quantitative forecast.</div>';
+    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 24px;">Data error: ${e.message}</div>`;
   }
 
   try{
@@ -552,7 +562,7 @@ async function runFullReport(){
     const report = await r.json();
     renderVerdict(report.analysis);
   }catch(e){
-    verdictArea.innerHTML = `<div class="error">Synthesis failed: ${e.message}</div>`;
+    document.getElementById("verdict-area").innerHTML = `<div class="error">Synthesis failed: ${e.message}</div>`;
   }finally{
     btn.disabled = false; btn.innerHTML = "Generate Report";
   }
