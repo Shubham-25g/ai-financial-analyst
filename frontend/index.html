@@ -243,7 +243,9 @@
 </div>
 
 <script>
-const API_BASE = "http://localhost:8000";
+const API_BASE = (location.port === "5500" || location.protocol === "file:")
+  ? "http://localhost:8000"
+  : window.location.origin;
 document.getElementById("api-base").textContent = API_BASE;
 let chart = null;
 
