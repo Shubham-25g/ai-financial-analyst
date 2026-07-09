@@ -1,6 +1,7 @@
 """7-day inference from a trained checkpoint, with a simple Monte-Carlo-dropout
 confidence band (cheap uncertainty estimate without training an ensemble)."""
 from __future__ import annotations
+import time
 import numpy as np
 import torch
 
@@ -8,6 +9,15 @@ from app import config
 from app.data.market_data import get_prepared_data
 from app.models.lstm_model import LSTMForecaster
 from app.models.baselines import compute_drift_log_returns
+
+# Monte Carlo dropout means every call to forecast() samples fresh randomness,
+# so two independent calls for the same ticker (e.g. the dashboard's chart
+# request and the report endpoint's internal call) would otherwise return
+# different numbers — same model, different random draws. Caching briefly
+# ensures the chart and the LLM's narrative are always talking about the
+# exact same forecast, not two different samples of it.
+_forecast_cache: dict = {}
+FORECAST_CACHE_TTL_SECONDS = 10 * 60  # 10 minutes
 
 
 def _load_checkpoint(ticker: str):
@@ -20,6 +30,17 @@ def _load_checkpoint(ticker: str):
 
 
 def forecast(ticker: str, mc_samples: int = 30) -> dict:
+    now = time.time()
+    cached = _forecast_cache.get(ticker)
+    if cached and (now - cached["ts"]) < FORECAST_CACHE_TTL_SECONDS:
+        return cached["result"]
+
+    result = _forecast_uncached(ticker, mc_samples)
+    _forecast_cache[ticker] = {"result": result, "ts": now}
+    return result
+
+
+def _forecast_uncached(ticker: str, mc_samples: int = 30) -> dict:
     ckpt = _load_checkpoint(ticker)
     features = ckpt["features"]
     seq_len = ckpt["seq_len"]
