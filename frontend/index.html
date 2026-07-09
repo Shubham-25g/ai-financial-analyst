@@ -135,7 +135,7 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.2);
   }
   
-  /* Shared Panel Header (Flex layout to hold the right-aligned delta) */
+  /* Shared Panel Header */
   .panel-header {
     display: flex;
     justify-content: space-between;
@@ -149,10 +149,24 @@
   
   .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; }
   
-  /* Delta Badge now inside Panel Header */
   .delta { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 4px; letter-spacing: 0.02em; }
   .delta.pos { color: var(--positive); background: var(--positive-bg); border: 1px solid var(--positive-border); }
   .delta.neg { color: var(--negative); background: var(--negative-bg); border: 1px solid var(--negative-border); }
+
+  /* Expanding Chart Holder State */
+  #chart-holder {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Small resting height */
+    transition: height 0.4s var(--ease);
+    overflow: hidden;
+  }
+  
+  #chart-holder.expanded {
+    height: 280px; /* Expands to fit graph/skeleton */
+  }
 
   /* ---------- Verdict Wide Layout ---------- */
   .verdict-layout { display: grid; grid-template-columns: 200px 1fr; gap: 40px; align-items: start; }
@@ -172,7 +186,6 @@
   .meta-stacked { font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 10px; }
   .meta-stacked b { color: var(--text-primary); font-weight: 500; }
 
-  /* Muted Green/Red Tags for the verdict section */
   .tags { display: flex; flex-wrap: wrap; gap: 10px; }
   .tag { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid; font-weight: 500; letter-spacing: 0.01em;}
   .tag.risk { color: var(--negative); background: var(--negative-bg); border-color: var(--negative-border); }
@@ -214,6 +227,7 @@
 <body>
 <div class="wrap">
 
+  <!-- Header Container -->
   <div class="header-container">
     <div class="brand-group">
       <div class="brand">Ledger<em>.ai</em></div>
@@ -225,6 +239,7 @@
     </div>
   </div>
 
+  <!-- Interactive Controls Area -->
   <div class="control-bar">
     <div class="controls">
       <span class="field-label">Asset</span>
@@ -236,26 +251,31 @@
     </div>
   </div>
 
+  <!-- Metric Hero -->
   <div class="hero">
     <div class="price-block">
       <div class="label">Latest Close</div>
       <div class="price" id="hero-price">—<span class="sub" id="hero-sub">Select an asset to begin</span></div>
     </div>
-    </div>
+  </div>
 
+  <!-- Stacked Analytics Layout -->
   <div class="stacked-layout">
     
+    <!-- Chart Module -->
     <div class="panel chart-panel">
+      <!-- Flex Header containing the Eyebrow on left and Delta on right -->
       <div class="panel-header">
         <div class="eyebrow">7-Day LSTM Forecast (Median / 10th–90th Pct)</div>
         <div class="delta" id="hero-delta" style="display:none;"></div>
       </div>
       
-      <div id="chart-holder" style="width: 100%; display: flex; align-items: center; justify-content: center; min-height: 280px;">
-        <canvas id="forecast-chart" height="120"></canvas>
+      <div id="chart-holder">
+        <div class="empty">Run an analysis to generate the quantitative forecast chart.</div>
       </div>
     </div>
 
+    <!-- Verdict Module -->
     <div class="panel verdict-panel">
       <div class="panel-header" style="margin-bottom: 24px;">
         <div class="eyebrow">Executive Summary</div>
@@ -266,6 +286,7 @@
     </div>
   </div>
 
+  <!-- News Stream Section -->
   <div style="margin-bottom: 24px;">
     <div class="eyebrow" style="margin-bottom: 16px; border:none;">Market Context & News</div>
     <div id="news-area" class="news-grid" style="border:none; background:transparent;">
@@ -273,6 +294,7 @@
     </div>
   </div>
 
+  <!-- Footer -->
   <footer>
     <div>API Endpoint: <span id="api-base" style="color: var(--text-secondary);"></span></div>
     <div>System running in fallback mode by default. <a href="#">Documentation</a></div>
@@ -415,7 +437,6 @@ function renderNews(news){
 function renderVerdict(analysis){
   const area = document.getElementById("verdict-area");
   
-  // Re-implemented risk and catalyst classes here
   const risks = (analysis.key_risks||[]).map(r => `<span class="tag risk">${r}</span>`).join("");
   const catalysts = (analysis.key_catalysts||[]).map(c => `<span class="tag catalyst">${c}</span>`).join("");
   
@@ -439,8 +460,14 @@ function renderVerdict(analysis){
 async function runForecastOnly(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("run-btn");
+  const chartHolder = document.getElementById("chart-holder");
+  
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing';
+  
+  // Expand the chart holder space for the skeleton and canvas
+  chartHolder.classList.add("expanded");
   renderChartSkeleton();
+  
   document.getElementById("verdict-area").innerHTML = '<div class="empty">Generate a report to view synthesis across quantitative targets and retrieved market narratives.</div>';
   try{
     const [fRes, nRes] = await Promise.all([
@@ -454,7 +481,8 @@ async function runForecastOnly(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    document.getElementById("chart-holder").innerHTML = "";
+    chartHolder.innerHTML = '<div class="empty">Run an analysis to generate the quantitative forecast chart.</div>';
+    chartHolder.classList.remove("expanded"); // Retract the layout if it fails
     document.getElementById("news-area").innerHTML = `<div class="error">Error loading data: ${e.message}</div>`;
   }finally{
     btn.disabled = false; btn.innerHTML = "Run Analysis";
@@ -464,8 +492,14 @@ async function runForecastOnly(){
 async function runFullReport(){
   const ticker = document.getElementById("ticker-select").value;
   const btn = document.getElementById("report-btn");
+  const chartHolder = document.getElementById("chart-holder");
+  
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing';
+  
+  // Expand the chart holder space for the skeleton and canvas
+  chartHolder.classList.add("expanded");
   renderChartSkeleton();
+  
   document.getElementById("verdict-area").innerHTML = '<div class="empty" style="color: var(--text-tertiary);">LLM synthesizing market context...</div>';
 
   const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
@@ -481,7 +515,8 @@ async function runFullReport(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    document.getElementById("chart-holder").innerHTML = "";
+    chartHolder.innerHTML = '<div class="empty">Run an analysis to generate the quantitative forecast chart.</div>';
+    chartHolder.classList.remove("expanded"); // Retract the layout if it fails
     document.getElementById("news-area").innerHTML = `<div class="error">Data error: ${e.message}</div>`;
   }
 
