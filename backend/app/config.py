@@ -23,7 +23,7 @@ LEARNING_RATE = 1e-3
 BATCH_SIZE = 32
 
 MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY", "")
-MISTRAL_MODEL = "mistral-large-latest"
+MISTRAL_MODEL = "mistral-medium-latest"
 
 VECTOR_INDEX_PATH = BASE_DIR / "rag" / "faiss.index"
 VECTOR_META_PATH = BASE_DIR / "rag" / "faiss_meta.json"
