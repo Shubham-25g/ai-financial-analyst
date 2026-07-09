@@ -199,8 +199,24 @@
   .rationale { font-size: 15px; line-height: 1.7; color: var(--text-primary); max-width: 850px; }
 
   /* ---------- News Section ---------- */
-  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .news-item { background: var(--surface); padding: 28px; display: flex; flex-direction: column; justify-content: space-between; transition: background .2s ease; }
+  .news-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+    background: transparent; /* Makes empty spaces match page background */
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin-top: 16px;
+  }
+  .news-item { 
+    background: var(--surface); 
+    padding: 28px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    transition: background .2s ease; 
+    box-shadow: 1px 1px 0 0 var(--border); /* Draws internal grid lines perfectly without gaps */
+  }
   .news-item:hover { background: #191b20; }
   .news-item .headline { font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary); line-height: 1.5; letter-spacing: -0.01em; }
   .news-item .meta { font-size: 11px; color: var(--text-tertiary); margin-bottom: 14px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.04em; }
