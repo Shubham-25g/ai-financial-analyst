@@ -5,240 +5,281 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Ledger — AI Financial Analyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root{
-    /* neutral graphite base — no green/warm cast */
-    --ink:#0B0C0E;
-    --surface:#131417;
-    --surface-2:#1B1D21;
-    --surface-hover:#202327;
-    --hairline:rgba(255,255,255,0.08);
-    --hairline-strong:rgba(255,255,255,0.15);
-    --text:#F1F2F4;
-    --text-dim:#9A9DA3;
-    --text-faint:#5B5E66;
-    --quant:#57C4E0;
-    --quant-soft:rgba(87,196,224,0.13);
-    --narrative:#E7AD52;
-    --narrative-soft:rgba(231,173,82,0.13);
-    --risk:#E56C58;
-    --risk-soft:rgba(229,108,88,0.12);
-    --catalyst:#5FC48A;
-    --catalyst-soft:rgba(95,196,138,0.12);
-    --radius:10px;
-    --radius-sm:7px;
-    --shadow: 0 10px 34px rgba(0,0,0,0.42);
-    --ease: cubic-bezier(.22,.8,.32,1);
-  }
-  *{box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    background:
-      radial-gradient(1100px 550px at 12% -8%, rgba(87,196,224,0.045), transparent 60%),
-      radial-gradient(950px 480px at 100% 0%, rgba(231,173,82,0.04), transparent 60%),
-      var(--ink);
-    color:var(--text);
-    font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
-  }
-  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001s !important; transition-duration:.001s !important; } }
-
-  .wrap{max-width:1140px; margin:0 auto; padding:44px 24px 90px; animation:pageIn .55s var(--ease) both;}
-  @keyframes pageIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
-
-  /* ---------- masthead ---------- */
-  .masthead{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:14px;}
-  .brand{font-family:'Fraunces',serif; font-weight:600; font-size:30px; letter-spacing:-0.01em; color:var(--text);}
-  .brand em{font-style:italic; font-weight:500; background:linear-gradient(100deg,var(--quant),var(--narrative)); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .tagline{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em;}
-  .status-pill{display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; color:var(--text-dim); padding:6px 12px; border:1px solid var(--hairline); border-radius:20px; transition:border-color .3s var(--ease);}
-  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--text-faint); transition:background .3s var(--ease);}
-  .status-dot.ok{background:var(--catalyst); box-shadow:0 0 0 0 rgba(95,196,138,0.55); animation:pulseDot 2.4s ease-out infinite;}
-  .status-dot.bad{background:var(--risk); box-shadow:0 0 8px var(--risk);}
-  @keyframes pulseDot{
-    0%{ box-shadow:0 0 0 0 rgba(95,196,138,0.45); }
-    70%{ box-shadow:0 0 0 7px rgba(95,196,138,0); }
-    100%{ box-shadow:0 0 0 0 rgba(95,196,138,0); }
+  :root {
+    /* Premium Deep Slate & Obsidian Base */
+    --ink: #08090b;
+    --surface: #0f1115;
+    --surface-2: #16191f;
+    --surface-hover: #1e222a;
+    --hairline: rgba(255, 255, 255, 0.045);
+    --hairline-strong: rgba(255, 255, 255, 0.12);
+    --text: #f3f4f6;
+    --text-dim: #94a3b8;
+    --text-faint: #475569;
+    
+    /* Accents with precise luminous styling */
+    --quant: #00f0ff;
+    --quant-soft: rgba(0, 240, 255, 0.06);
+    --narrative: #ffb800;
+    --narrative-soft: rgba(255, 184, 0, 0.06);
+    --risk: #ff4b4b;
+    --risk-soft: rgba(255, 75, 75, 0.08);
+    --catalyst: #00e676;
+    --catalyst-soft: rgba(0, 230, 118, 0.08);
+    
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .thesis-line{height:2px; margin:20px 0 32px; border-radius:2px;
-    background:linear-gradient(90deg, var(--quant) 0%, var(--quant) 42%, var(--hairline-strong) 50%, var(--narrative) 58%, var(--narrative) 100%);
-    opacity:0.85; transform-origin:left center; animation:lineIn .7s .1s var(--ease) both;}
-  @keyframes lineIn{ from{transform:scaleX(0);} to{transform:scaleX(1);} }
-
-  /* ---------- controls ---------- */
-  .controls{display:flex; gap:12px; align-items:center; margin-bottom:32px; flex-wrap:wrap;}
-  .field-label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em; margin-right:2px;}
-  select{
-    font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--surface-2);
-    color:var(--text); border:1px solid var(--hairline-strong); padding:10px 16px; border-radius:var(--radius-sm);
-    cursor:pointer; appearance:none; transition:border-color .2s var(--ease), background .2s var(--ease);
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A9DA3'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 14px center; padding-right:32px;
-  }
-  select:hover{ border-color:var(--hairline-strong); background-color:var(--surface-hover); }
-  select:focus-visible, button:focus-visible{ outline:2px solid var(--quant); outline-offset:2px; }
-
-  button{
-    font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:600;
-    border:none; border-radius:var(--radius-sm); padding:10px 18px; cursor:pointer;
-    display:inline-flex; align-items:center; gap:8px; letter-spacing:0.01em;
-    transition:filter .18s var(--ease), transform .12s var(--ease), box-shadow .2s var(--ease);
-  }
-  button:hover:not(:disabled){ transform:translateY(-1px); }
-  button:active:not(:disabled){ transform:translateY(0); }
-  button:disabled{opacity:0.55; cursor:wait;}
-  .btn-primary{ background:var(--quant); color:#04262C; }
-  .btn-primary:hover:not(:disabled){ filter:brightness(1.12); box-shadow:0 6px 20px rgba(87,196,224,0.25); }
-  .btn-accent{ background:var(--narrative); color:#2E1F06; }
-  .btn-accent:hover:not(:disabled){ filter:brightness(1.12); box-shadow:0 6px 20px rgba(231,173,82,0.22); }
-  .spinner{ width:11px; height:11px; border-radius:50%; border:2px solid rgba(0,0,0,0.25); border-top-color:currentColor; animation:spin .7s linear infinite; }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
-
-  /* ---------- hero ---------- */
-  .hero{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap; gap:14px;}
-  .hero .price-block .label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.09em; margin-bottom:6px;}
-  .hero .price{font-family:'Fraunces',serif; font-size:54px; font-weight:600; line-height:1; transition:opacity .2s;}
-  .hero .price .sub{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim); font-weight:400; display:block; margin-top:8px; letter-spacing:0.01em;}
-  .delta{font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; padding:8px 16px; border-radius:var(--radius-sm); white-space:nowrap;}
-  .delta.pos{color:var(--catalyst); background:var(--catalyst-soft);}
-  .delta.neg{color:var(--risk); background:var(--risk-soft);}
-  .fade-slide-in{ animation:fadeSlideUp .45s var(--ease) both; }
-  @keyframes fadeSlideUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
-  .pop-in{ animation:popIn .4s var(--ease) both; }
-  @keyframes popIn{ from{opacity:0; transform:scale(.92);} to{opacity:1; transform:scale(1);} }
-
-  /* ---------- panels ---------- */
-  .panel{
-    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-    border:1px solid var(--hairline); border-radius:var(--radius);
-    padding:24px; box-shadow:var(--shadow);
-    transition:border-color .3s var(--ease);
-  }
-  .chart-panel{ margin-bottom:30px; }
-  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--quant); margin-bottom:16px; display:flex; align-items:center; gap:8px;}
-  .eyebrow::before{content:''; width:6px; height:6px; background:var(--quant); border-radius:50%; box-shadow:0 0 6px var(--quant);}
-  .eyebrow.narrative-eyebrow{color:var(--narrative);}
-  .eyebrow.narrative-eyebrow::before{background:var(--narrative); box-shadow:0 0 6px var(--narrative);}
-
-  .grid{display:grid; grid-template-columns:1.05fr 1fr; gap:24px;}
-  @media (max-width:840px){.grid{grid-template-columns:1fr;}}
-
-  /* ---------- verdict panel: internal two-column report layout ---------- */
-  .verdict-panel{ margin-bottom:34px; }
-  .verdict-layout{ display:grid; grid-template-columns:200px 1fr; gap:28px; align-items:start; }
-  @media (max-width:700px){ .verdict-layout{ grid-template-columns:1fr; } }
-  .verdict-left{ display:flex; flex-direction:column; align-items:flex-start; gap:14px; }
-  .verdict-right{ min-width:0; }
-  .verdict-divider{ display:none; }
-  @media (min-width:701px){
-    .verdict-left{ border-right:1px solid var(--hairline); padding-right:28px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  
+  body {
+    background-color: var(--ink);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 240, 255, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(255, 184, 0, 0.02) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(15, 17, 21, 0.5) 0px, var(--ink) 100%);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
   }
 
-  .stamp{
-    font-family:'Fraunces',serif; font-weight:600; font-size:22px;
-    text-transform:uppercase; letter-spacing:0.06em; padding:10px 22px;
-    border:3px double; border-radius:6px; transform:rotate(-3deg);
-    text-shadow:0 0 12px currentColor; white-space:nowrap;
-    animation:stampIn .5s var(--ease) both;
-  }
-  @keyframes stampIn{
-    from{ opacity:0; transform:rotate(6deg) scale(.7); }
-    60%{ opacity:1; transform:rotate(-5deg) scale(1.05); }
-    to{ transform:rotate(-3deg) scale(1); }
-  }
-  .stamp.buy{color:var(--catalyst); border-color:var(--catalyst);}
-  .stamp.sell{color:var(--risk); border-color:var(--risk);}
-  .stamp.hold{color:var(--narrative); border-color:var(--narrative);}
-  .meta-inline{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em; line-height:1.7;}
-  .meta-inline b{color:var(--text-dim); font-weight:600;}
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
-  .tags{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px;}
-  .tag{font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:6px 12px; border-radius:20px; border:1px solid; opacity:0; animation:tagIn .35s var(--ease) forwards;}
-  .tag.risk{color:var(--risk); border-color:rgba(229,108,88,0.35); background:var(--risk-soft);}
-  .tag.catalyst{color:var(--catalyst); border-color:rgba(95,196,138,0.35); background:var(--catalyst-soft);}
-  @keyframes tagIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .001s !important; transition-duration: .001s !important; } }
 
-  .rationale{font-size:14.5px; line-height:1.68; color:var(--text);}
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 60px; animation: pageIn .8s var(--ease) both; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
-  /* ---------- news: full-width card grid ---------- */
-  .news-section{ margin-bottom:12px; }
-  .news-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;
-    align-items:start;
+  /* ---------- Top Navigation / Masthead ---------- */
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 20px;
   }
-  .news-item{
-    background:linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-    border:1px solid var(--hairline); border-radius:var(--radius-sm);
-    padding:18px; opacity:0; animation:fadeSlideUp .4s var(--ease) forwards;
-    transition:border-color .2s var(--ease), transform .2s var(--ease);
+  .brand { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .brand em { font-style: normal; background: linear-gradient(135deg, var(--quant), #00a8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tagline { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8; }
+  
+  .status-pill { display: inline-flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); padding: 8px 14px; background: var(--surface); border: 1px solid var(--hairline-strong); border-radius: 30px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+  .status-dot.ok { background: var(--catalyst); box-shadow: 0 0 10px var(--catalyst); animation: pulseDot 2s ease-out infinite; }
+  .status-dot.bad { background: var(--risk); box-shadow: 0 0 10px var(--risk); }
+  @keyframes pulseDot {
+    0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.5); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 230, 118, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
   }
-  .news-item:hover{ border-color:var(--hairline-strong); transform:translateY(-2px); }
-  .news-item .headline{font-weight:600; font-size:14px; margin-bottom:8px; color:var(--text); line-height:1.35;}
-  .news-item .meta{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-faint); margin-bottom:9px; letter-spacing:0.02em; text-transform:uppercase;}
-  .news-item .body{font-size:12.5px; color:var(--text-dim); line-height:1.55;}
-  .news-item .read-link{
-    display:inline-flex; align-items:center; gap:5px; margin-top:12px;
-    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--quant);
-    text-decoration:none; border-bottom:1px solid transparent; transition:border-color .15s var(--ease);
+
+  /* ---------- Action & Controls Bar ---------- */
+  .control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 20px;
   }
-  .news-item .read-link:hover{ border-color:var(--quant); }
+  .controls { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .field-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  
+  select {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--surface-2);
+    color: var(--text); border: 1px solid var(--hairline-strong); padding: 10px 36px 10px 16px; border-radius: var(--radius-sm);
+    cursor: pointer; appearance: none; transition: all .2s var(--ease); font-weight: 500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+  }
+  select:hover { border-color: var(--quant); background-color: var(--surface-hover); }
+  select:focus-visible, button:focus-visible { outline: 2px solid var(--quant); outline-offset: 2px; }
 
-  /* ---------- states ---------- */
-  .news-grid .empty, .news-grid .error{ grid-column:1 / -1; }
-  .empty, .error{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-faint); padding:8px 0; line-height:1.6;}
-  .error{color:var(--risk);}
-  .skeleton{ height:220px; border-radius:var(--radius-sm); background:linear-gradient(100deg, var(--surface-2) 30%, rgba(255,255,255,0.05) 50%, var(--surface-2) 70%); background-size:200% 100%; animation:shimmer 1.3s ease-in-out infinite; }
-  @keyframes shimmer{ 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+  button {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600;
+    border: none; border-radius: var(--radius-sm); padding: 11px 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px; letter-spacing: -0.01em;
+    transition: all .2s var(--ease);
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:disabled { opacity: 0.4; cursor: wait; }
+  
+  .btn-primary { background: var(--text); color: var(--ink); }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1); }
+  .btn-accent { background: rgba(255, 184, 0, 0.1); color: var(--narrative); border: 1px solid rgba(255, 184, 0, 0.2); }
+  .btn-accent:hover:not(:disabled) { background: var(--narrative); color: var(--ink); box-shadow: 0 8px 24px rgba(255, 184, 0, 0.15); }
+  .spinner { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); border-top-color: currentColor; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  footer{margin-top:52px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-faint); border-top:1px solid var(--hairline); padding-top:18px; letter-spacing:0.01em;}
-  footer a{color:var(--text-dim);}
+  /* ---------- Performance Metric Hero ---------- */
+  .hero { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+  .price-block .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .price { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; display: flex; align-items: baseline; gap: 14px; }
+  .price .sub { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-faint); font-weight: 400; letter-spacing: 0; }
+  .delta { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; padding: 8px 16px; border-radius: 30px; letter-spacing: -0.01em; }
+  .delta.pos { color: var(--catalyst); background: var(--catalyst-soft); border: 1px solid rgba(0, 230, 118, 0.15); }
+  .delta.neg { color: var(--risk); background: var(--risk-soft); border: 1px solid rgba(255, 75, 75, 0.15); }
+  
+  .fade-slide-in { animation: fadeSlideUp .5s var(--ease) both; }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Grid & Structural Panels ---------- */
+  .grid-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--quant); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .eyebrow::before { content: ''; width: 4px; height: 4px; background: var(--quant); border-radius: 50%; box-shadow: 0 0 8px var(--quant); }
+  .eyebrow.narrative-eyebrow { color: var(--narrative); }
+  .eyebrow.narrative-eyebrow::before { background: var(--narrative); box-shadow: 0 0 8px var(--narrative); }
+
+  /* ---------- Verdict & Signal Panel ---------- */
+  .verdict-layout { display: flex; flex-direction: column; gap: 20px; height: 100%; }
+  .verdict-top { display: flex; align-items: center; gap: 20px; justify-content: space-between; border-bottom: 1px solid var(--hairline); padding-bottom: 18px; flex-wrap: wrap; }
+  
+  .stamp {
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px;
+    text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 14px;
+    border-radius: var(--radius-sm); border: 1px solid;
+    animation: stampIn 0.4s var(--ease) both;
+  }
+  @keyframes stampIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .stamp.buy { color: var(--catalyst); border-color: rgba(0, 230, 118, 0.3); background: var(--catalyst-soft); }
+  .stamp.sell { color: var(--risk); border-color: rgba(255, 75, 75, 0.3); background: var(--risk-soft); }
+  .stamp.hold { color: var(--narrative); border-color: rgba(255, 184, 0, 0.3); background: var(--narrative-soft); }
+  
+  .meta-inline { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); display: flex; gap: 16px; }
+  .meta-inline b { color: var(--text); font-weight: 500; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 6px; border: 1px solid; opacity: 0; animation: tagIn .35s var(--ease) forwards; }
+  .tag.risk { color: var(--risk); border-color: rgba(255, 75, 75, 0.15); background: rgba(255, 75, 75, 0.03); }
+  .tag.catalyst { color: var(--catalyst); border-color: rgba(0, 230, 118, 0.15); background: rgba(0, 230, 118, 0.03); }
+  @keyframes tagIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  .rationale { font-size: 14px; line-height: 1.6; color: var(--text-dim); }
+
+  /* ---------- News Feed Section ---------- */
+  .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .news-item {
+    background: var(--surface-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    padding: 20px; opacity: 0; animation: fadeSlideUp .4s var(--ease) forwards;
+    transition: all .25s var(--ease);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .news-item:hover { border-color: var(--hairline-strong); background: var(--surface-hover); transform: translateY(-2px); }
+  .news-item .headline { font-weight: 600; font-size: 14.5px; margin-bottom: 10px; color: var(--text); line-height: 1.4; letter-spacing: -0.01em; }
+  .news-item .meta { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); margin-bottom: 12px; opacity: 0.75; }
+  .news-item .body { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+  .news-item .read-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--quant);
+    text-decoration: none; font-weight: 500; transition: color .15s ease;
+  }
+  .news-item .read-link:hover { color: var(--text); }
+
+  /* ---------- Empty, Error, Skeleton States ---------- */
+  .empty, .error { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-faint); padding: 24px 0; line-height: 1.6; text-align: center; width: 100%; margin: auto; }
+  .error { color: var(--risk); }
+  .skeleton { height: 260px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-hover) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  footer { margin-top: 60px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-faint); border-top: 1px solid var(--hairline); padding-top: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  footer a { color: var(--text-dim); text-decoration: none; }
+  footer a:hover { color: var(--text); }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="masthead">
-    <div class="brand">Ledger<em>.ai</em></div>
-    <div id="api-status" class="status-pill"><span class="status-dot"></span><span class="status-label">checking…</span></div>
+  <div class="header-container">
+    <div>
+      <div class="brand">Ledger<em>.ai</em></div>
+      <div class="tagline">Quant forecast paired with narrative synthesis</div>
+    </div>
+    <div id="api-status" class="status-pill">
+      <span class="status-dot"></span>
+      <span class="status-label">checking…</span>
+    </div>
   </div>
-  <div class="tagline">Quant forecast paired with narrative synthesis</div>
-  <div class="thesis-line"></div>
 
-  <div class="controls">
-    <span class="field-label">Ticker</span>
-    <select id="ticker-select"></select>
-    <button id="run-btn" class="btn-primary">Run analysis</button>
-    <button id="report-btn" class="btn-accent">Full GenAI report</button>
+  <div class="control-bar">
+    <div class="controls">
+      <span class="field-label">Ticker Matrix</span>
+      <select id="ticker-select"></select>
+    </div>
+    <div class="controls">
+      <button id="run-btn" class="btn-primary">Run analysis</button>
+      <button id="report-btn" class="btn-accent">Full GenAI report</button>
+    </div>
   </div>
 
   <div class="hero">
     <div class="price-block">
-      <div class="label">Last close</div>
+      <div class="label">Last Market Close</div>
       <div class="price" id="hero-price">—<span class="sub" id="hero-sub">Choose a ticker and run an analysis</span></div>
     </div>
     <div class="delta" id="hero-delta" style="display:none;"></div>
   </div>
 
-  <div class="panel chart-panel" style="margin-top:22px;">
-    <div class="eyebrow">7-day LSTM forecast · median with 10th–90th percentile band</div>
-    <div id="chart-holder"><canvas id="forecast-chart" height="90"></canvas></div>
+  <div class="grid-layout">
+    <div class="panel chart-panel">
+      <div class="eyebrow">7-day LSTM forecast · median with 10th–90th percentile band</div>
+      <div id="chart-holder" style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 260px;">
+        <canvas id="forecast-chart" height="110"></canvas>
+      </div>
+    </div>
+
+    <div class="panel verdict-panel">
+      <div class="eyebrow narrative-eyebrow">GenAI verdict</div>
+      <div id="verdict-area" style="flex: 1; display: flex;">
+        <div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div>
+      </div>
+    </div>
   </div>
 
-  <div class="panel verdict-panel">
-    <div class="eyebrow narrative-eyebrow">GenAI verdict</div>
-    <div id="verdict-area"><div class="empty">Run the full report to see a buy / sell / hold read, synthesized from the forecast above and the news below.</div></div>
-  </div>
-
-  <div class="news-section">
-    <div class="eyebrow">Retrieved news &amp; macro context</div>
-    <div id="news-area" class="news-grid"><div class="empty">Run an analysis to pull in the news driving this ticker right now.</div></div>
+  <div class="panel" style="margin-bottom: 24px;">
+    <div class="eyebrow" style="color: var(--text-dim);">Retrieved news &amp; macro context</div>
+    <div id="news-area" class="news-grid">
+      <div class="empty">Run an analysis to pull in the news driving this ticker right now.</div>
+    </div>
   </div>
 
   <footer>
-    API base: <span id="api-base"></span> · Synthetic fallback data ships out of the box — see README for wiring in live sources
+    <div>API base: <span id="api-base" style="color: var(--text-dim);"></span></div>
+    <div>Synthetic fallback engine active · <a href="#">Read Documentation</a></div>
   </footer>
 </div>
 
@@ -293,7 +334,7 @@ function animateCount(el, from, to, duration=500, prefix="$"){
 
 function renderChart(forecast){
   const holder = document.getElementById("chart-holder");
-  holder.innerHTML = '<canvas id="forecast-chart" height="90"></canvas>';
+  holder.innerHTML = '<canvas id="forecast-chart" height="110"></canvas>';
   const ctx = document.getElementById("forecast-chart").getContext("2d");
   const labels = forecast.forecast.map(f => f.date.slice(5));
   const median = forecast.forecast.map(f => f.median);
@@ -306,34 +347,35 @@ function renderChart(forecast){
     data: {
       labels,
       datasets: [
-        {label:"90th pct", data:high, borderColor:"transparent", backgroundColor:"rgba(87,196,224,0.12)", fill:"+1", pointRadius:0, tension:0.35},
-        {label:"10th pct", data:low, borderColor:"transparent", backgroundColor:"rgba(87,196,224,0.12)", fill:false, pointRadius:0, tension:0.35},
-        {label:"Median forecast", data:median, borderColor:"#57C4E0", backgroundColor:"#57C4E0", borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.35},
+        {label:"90th pct", data:high, borderColor:"transparent", backgroundColor:"rgba(0, 240, 255, 0.05)", fill:"+1", pointRadius:0, tension:0.35},
+        {label:"10th pct", data:low, borderColor:"transparent", backgroundColor:"rgba(0, 240, 255, 0.05)", fill:false, pointRadius:0, tension:0.35},
+        {label:"Median forecast", data:median, borderColor:"#00f0ff", backgroundColor:"#00f0ff", borderWidth:2.5, pointRadius:3, pointHoverRadius:5, tension:0.35},
       ]
     },
     options:{
       responsive:true,
+      maintainAspectRatio:false,
       interaction:{ mode:"index", intersect:false },
       animation:{ duration:700, easing:"easeOutCubic" },
       plugins:{
-        legend:{ labels:{ color:"#9A9DA3", font:{family:"IBM Plex Mono", size:11}, boxWidth:10, usePointStyle:true } },
+        legend:{ labels:{ color:"#94a3b8", font:{family:"JetBrains Mono", size:11}, boxWidth:10, usePointStyle:true } },
         tooltip:{
-          backgroundColor:"#1B1D21", borderColor:"rgba(255,255,255,0.15)", borderWidth:1,
-          titleFont:{family:"IBM Plex Mono", size:11}, bodyFont:{family:"IBM Plex Mono", size:11},
+          backgroundColor:"#16191f", borderColor:"rgba(255,255,255,0.1)", borderWidth:1,
+          titleFont:{family:"JetBrains Mono", size:11}, bodyFont:{family:"JetBrains Mono", size:11},
           padding:10, displayColors:true,
           callbacks:{ label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` }
         }
       },
       scales:{
-        x:{ ticks:{color:"#5B5E66", font:{family:"IBM Plex Mono", size:10}}, grid:{color:"rgba(255,255,255,0.05)"} },
-        y:{ ticks:{color:"#5B5E66", font:{family:"IBM Plex Mono", size:10}, callback:(v)=>"$"+v}, grid:{color:"rgba(255,255,255,0.05)"} }
+        x:{ ticks:{color:"#475569", font:{family:"JetBrains Mono", size:10}}, grid:{color:"rgba(255,255,255,0.02)"} },
+        y:{ ticks:{color:"#475569", font:{family:"JetBrains Mono", size:10}, callback:(v)=>"$"+v}, grid:{color:"rgba(255,255,255,0.02)"} }
       }
     }
   });
 }
 
 function renderChartSkeleton(){
-  document.getElementById("chart-holder").innerHTML = '<div class="skeleton"></div>';
+  document.getElementById("chart-holder").innerHTML = '<div class="skeleton" style="width:100%"></div>';
 }
 
 function renderHero(forecast){
@@ -361,9 +403,11 @@ function renderNews(news){
   if(!news.length){ area.innerHTML = '<div class="empty">No relevant news retrieved for this ticker right now.</div>'; return; }
   area.innerHTML = news.map((n, i) => `
     <div class="news-item" style="animation-delay:${i * 60}ms">
-      <div class="headline">${n.headline}</div>
-      <div class="meta">${n.ticker} · ${n.date} · relevance ${n.relevance_score}</div>
-      <div class="body">${truncate(n.text)}</div>
+      <div>
+        <div class="headline">${n.headline}</div>
+        <div class="meta">${n.ticker} · ${n.date} · relevance ${n.relevance_score}</div>
+        <div class="body">${truncate(n.text)}</div>
+      </div>
       ${n.url ? `<a class="read-link" href="${n.url}" target="_blank" rel="noopener noreferrer">Read article ↗</a>` : ""}
     </div>
   `).join("");
@@ -375,14 +419,12 @@ function renderVerdict(analysis){
   const catalysts = (analysis.key_catalysts||[]).map((c,i) => `<span class="tag catalyst" style="animation-delay:${i*70}ms">${c}</span>`).join("");
   area.innerHTML = `
     <div class="verdict-layout">
-      <div class="verdict-left">
+      <div class="verdict-top">
         <span class="stamp ${analysis.recommendation}">${analysis.recommendation}</span>
-        <span class="meta-inline"><b>Confidence</b> ${analysis.confidence}<br><b>Sentiment</b> ${analysis.sentiment}</span>
+        <span class="meta-inline"><span>Conf: <b>${analysis.confidence}</b></span> <span>Sent: <b>${analysis.sentiment}</b></span></span>
       </div>
-      <div class="verdict-right">
-        <div class="tags">${catalysts}${risks}</div>
-        <div class="rationale fade-slide-in" style="animation-delay:150ms">${analysis.rationale}</div>
-      </div>
+      <div class="tags">${catalysts}${risks}</div>
+      <div class="rationale fade-slide-in" style="animation-delay:150ms">${analysis.rationale}</div>
     </div>
   `;
 }
@@ -419,10 +461,6 @@ async function runFullReport(){
   renderChartSkeleton();
   document.getElementById("verdict-area").innerHTML = '<div class="empty">Reading the forecast and the news to form a view…</div>';
 
-  // Fire the fast calls (forecast + news) and the slow one (full report, which
-  // includes the LLM synthesis step) in parallel — don't make the chart and
-  // news wait on the LLM call just because they're bundled in the same
-  // /report response. Render each piece the moment its own data is ready.
   const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
   const newsPromise = fetch(`${API_BASE}/news-analysis/${ticker}`);
   const reportPromise = fetch(`${API_BASE}/report/${ticker}`);
