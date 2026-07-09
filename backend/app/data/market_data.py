@@ -5,19 +5,61 @@ Market data layer.
 Everything else (indicators, sequence building) works on the returned
 DataFrame regardless of where it came from.
 """
+
 from __future__ import annotations
+import time
 import numpy as np
 import pandas as pd
+
 from app.data.earnings_calendar import add_earnings_features
+
+# In-memory cache: ticker -> {"df": DataFrame, "ts": epoch_seconds}
+# A 7-day forecast doesn't need up-to-the-second data, so caching cuts real
+# Yahoo Finance requests dramatically (every dashboard click would otherwise
+# hit Yahoo fresh, which is exactly what triggers their rate limiting on
+# shared cloud IPs like Hugging Face Spaces / Render / etc).
+_cache: dict = {}
+CACHE_TTL_SECONDS = 60 * 60  # 1 hour
 
 
 def fetch_ohlcv(ticker: str, days: int = 500, seed: int | None = None) -> pd.DataFrame:
+    """
+    Returns a DataFrame with columns [date, open, high, low, close, volume].
+    Cached for CACHE_TTL_SECONDS to reduce load on Yahoo Finance and survive
+    transient rate limits by serving the last-known-good data instead of
+    crashing.
+    """
+    now = time.time()
+    cached = _cache.get(ticker)
+    if cached and (now - cached["ts"]) < CACHE_TTL_SECONDS:
+        return cached["df"].tail(days).reset_index(drop=True)
+
     import yfinance as yf
-    df = yf.download(ticker, period="10y", interval="1d", progress=False)  # was "2y"
+    try:
+        df = yf.download(ticker, period="10y", interval="1d", progress=False)
+    except Exception as e:
+        if cached:
+            print(f"[market_data] yfinance request failed ({e}); serving stale cache for {ticker}")
+            return cached["df"].tail(days).reset_index(drop=True)
+        raise RuntimeError(f"Could not fetch market data for {ticker}: {e}")
+
     df = df.reset_index()
     df.columns = [c.lower() if isinstance(c, str) else c[0].lower() for c in df.columns]
-    df = df.rename(columns={"date": "date"})
-    return df[["date", "open", "high", "low", "close", "volume"]].tail(days).reset_index(drop=True)
+
+    if df.empty or "date" not in df.columns:
+        if cached:
+            print(f"[market_data] yfinance returned no usable data for {ticker} "
+                  f"(likely rate-limited); serving stale cache instead.")
+            return cached["df"].tail(days).reset_index(drop=True)
+        raise RuntimeError(
+            f"yfinance returned no usable data for {ticker} — likely rate-limited "
+            f"(YFRateLimitError) and no cached data exists yet for this ticker. "
+            f"Try again in a minute."
+        )
+
+    result = df[["date", "open", "high", "low", "close", "volume"]]
+    _cache[ticker] = {"df": result, "ts": now}
+    return result.tail(days).reset_index(drop=True)
 
 def add_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """Adds SMA, RSI, MACD columns. Uses `ta` if available, else manual fallback."""
