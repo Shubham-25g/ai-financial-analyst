@@ -21,7 +21,7 @@
     --text-tertiary: #686e75;
     
     /* Muted semantic colors for Risk/Catalyst */
-    --accent: #00d2ff; /* Brightened for chart visibility */
+    --accent: #00d2ff;
     --positive: #51cf66;
     --positive-bg: rgba(81, 207, 102, 0.12);
     --positive-border: rgba(81, 207, 102, 0.3);
@@ -121,12 +121,11 @@
   .price-block { display: flex; flex-direction: column; gap: 8px; }
   .price-block .label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
   
-  /* Fixed Alignment for Resting State */
   .price { font-family: 'Newsreader', serif; font-size: 56px; font-weight: 400; letter-spacing: -0.03em; line-height: 1; display: flex; align-items: baseline; gap: 16px; }
   .price .sub { font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text-secondary); font-weight: 400; letter-spacing: 0; margin-left: 2px; }
   .placeholder-text { font-family: 'Inter', sans-serif; font-size: 16px; color: var(--text-tertiary); font-style: italic; letter-spacing: 0; }
 
-  /* ---------- New Foolproof Expanding Panels ---------- */
+  /* ---------- Expanding Panels ---------- */
   .ledger-panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -146,12 +145,10 @@
   
   .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; }
   
-  /* Percentage Badge perfectly aligned on the right */
   .delta { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 4px; letter-spacing: 0.02em; display: none; }
   .delta.pos { color: var(--positive); background: var(--positive-bg); border: 1px solid var(--positive-border); }
   .delta.neg { color: var(--negative); background: var(--negative-bg); border: 1px solid var(--negative-border); }
 
-  /* The magic collapse mechanism - mathematically forces 0px height when closed */
   .panel-collapse {
     max-height: 0;
     opacity: 0;
@@ -160,15 +157,14 @@
   }
   
   .panel-collapse.is-open {
-    max-height: 1200px; /* Safe bounds to allow internal content to dictate height */
+    max-height: 1200px; 
     opacity: 1;
     margin-top: 24px;
     padding-top: 24px;
     border-top: 1px solid var(--border);
-    overflow: visible; /* Prevents clipping tooltips inside the chart once open */
+    overflow: visible; 
   }
 
-  /* Specific Wrapper to fix Chart.js sizing bugs */
   .chart-container {
     position: relative;
     height: 320px;
@@ -190,7 +186,6 @@
   .meta-stacked { font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 10px; }
   .meta-stacked b { color: var(--text-primary); font-weight: 500; }
 
-  /* Explicit Green/Red Tags for the AI Verdict */
   .tags { display: flex; flex-wrap: wrap; gap: 10px; }
   .tag { font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid; font-weight: 500; letter-spacing: 0.01em; }
   .tag.risk { color: var(--negative); background: var(--negative-bg); border-color: var(--negative-border); }
@@ -198,26 +193,29 @@
   
   .rationale { font-size: 15px; line-height: 1.7; color: var(--text-primary); max-width: 850px; }
 
-  /* ---------- News Section ---------- */
+  /* ---------- Floating Cards News Section ---------- */
   .news-grid { 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-    background: transparent; /* Makes empty spaces match page background */
-    border: 1px solid var(--border); 
-    border-radius: 8px; 
-    overflow: hidden; 
+    gap: 16px; /* Clean gap creates perfect separation */
     margin-top: 16px;
   }
+  
   .news-item { 
     background: var(--surface); 
+    border: 1px solid var(--border); 
+    border-radius: 8px; 
     padding: 28px; 
     display: flex; 
     flex-direction: column; 
     justify-content: space-between; 
-    transition: background .2s ease; 
-    box-shadow: 1px 1px 0 0 var(--border); /* Draws internal grid lines perfectly without gaps */
+    transition: background .2s ease, border-color .2s ease; 
   }
-  .news-item:hover { background: #191b20; }
+  .news-item:hover { 
+    background: #191b20; 
+    border-color: var(--border-hover); 
+  }
+  
   .news-item .headline { font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary); line-height: 1.5; letter-spacing: -0.01em; }
   .news-item .meta { font-size: 11px; color: var(--text-tertiary); margin-bottom: 14px; font-family: monospace; text-transform: uppercase; letter-spacing: 0.04em; }
   .news-item .body { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; }
@@ -225,8 +223,22 @@
   .news-item .read-link:hover { opacity: 0.8; }
 
   /* ---------- Loading States ---------- */
-  .error { color: var(--negative); font-size: 14px; }
-  .skeleton { height: 100%; width: 100%; background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 2s infinite linear; border-radius: 6px; min-height: 160px; }
+  .error { color: var(--negative); font-size: 14px; grid-column: 1 / -1; }
+  .empty { color: var(--text-tertiary); font-size: 13px; grid-column: 1 / -1; }
+  
+  /* Skeleton acts directly as a card element */
+  .skeleton { 
+    width: 100%; 
+    background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%); 
+    background-size: 200% 100%; 
+    animation: shimmer 2s infinite linear; 
+    border-radius: 8px; 
+    min-height: 220px; 
+  }
+  
+  #chart-holder .skeleton { height: 100%; border-radius: 6px; }
+  #verdict-area .skeleton { min-height: 160px; }
+
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   footer { margin-top: 80px; font-size: 12px; color: var(--text-tertiary); border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -354,7 +366,6 @@ function animateCount(el, from, to, duration=500, prefix="$"){
 
 function renderChart(forecast){
   const holder = document.getElementById("chart-holder");
-  // Explicitly defining 100% dimensions inline ensures Chart.js behaves properly on expand
   holder.innerHTML = '<canvas id="forecast-chart" style="width:100%; height:100%;"></canvas>';
   
   const ctx = document.getElementById("forecast-chart").getContext("2d");
@@ -405,7 +416,6 @@ function renderChart(forecast){
 function renderHero(forecast){
   const heroPrice = document.getElementById("hero-price");
   
-  // Overwrite placeholder text with actual structured numbers
   heroPrice.innerHTML = `<span id="price-num">$0.00</span><span class="sub" id="hero-sub">${forecast.ticker} / ${forecast.last_date}</span>`;
   const priceNumEl = document.getElementById("price-num");
   
@@ -426,7 +436,7 @@ function truncate(text, max=200){
 function renderNews(news){
   const area = document.getElementById("news-area");
   if(!news.length){ 
-    area.innerHTML = '<div style="padding: 24px; color: var(--text-secondary);">No relevant news retrieved.</div>'; 
+    area.innerHTML = '<div class="empty">No relevant news retrieved.</div>'; 
     return; 
   }
   
@@ -445,7 +455,6 @@ function renderNews(news){
 function renderVerdict(analysis){
   const area = document.getElementById("verdict-area");
   
-  // Force injection of explicit Risk/Catalyst CSS classes
   const risks = (analysis.key_risks||[]).map(r => `<span class="tag risk">${r}</span>`).join("");
   const catalysts = (analysis.key_catalysts||[]).map(c => `<span class="tag catalyst">${c}</span>`).join("");
   
@@ -466,7 +475,6 @@ function renderVerdict(analysis){
   `;
 }
 
-/* Expansion Handlers */
 function openPanel(id) { document.getElementById(id).classList.add('is-open'); }
 function closePanel(id) { document.getElementById(id).classList.remove('is-open'); }
 
@@ -475,14 +483,13 @@ async function runForecastOnly(){
   const btn = document.getElementById("run-btn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Processing';
   
-  // Slide open Chart & News, Close Verdict
   openPanel('chart-collapse');
   openPanel('news-collapse');
   closePanel('verdict-collapse');
   
-  // Inject Skeletons temporarily
+  // Inject raw skeletons directly into the grid
   document.getElementById("chart-holder").innerHTML = '<div class="skeleton"></div>';
-  document.getElementById("news-area").innerHTML = '<div class="news-item"><div class="skeleton"></div></div><div class="news-item"><div class="skeleton"></div></div>';
+  document.getElementById("news-area").innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
 
   try{
     const [fRes, nRes] = await Promise.all([
@@ -497,8 +504,8 @@ async function runForecastOnly(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    document.getElementById("chart-holder").innerHTML = '<div style="color:var(--negative)">Error loading quantitative forecast.</div>';
-    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 24px;">Error loading data: ${e.message}</div>`;
+    document.getElementById("chart-holder").innerHTML = '<div class="error">Error loading quantitative forecast.</div>';
+    document.getElementById("news-area").innerHTML = `<div class="error">Error loading data: ${e.message}</div>`;
   }finally{
     btn.disabled = false; btn.innerHTML = "Run Analysis";
   }
@@ -509,15 +516,14 @@ async function runFullReport(){
   const btn = document.getElementById("report-btn");
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Synthesizing';
   
-  // Slide open ALL panels
   openPanel('chart-collapse');
   openPanel('verdict-collapse');
   openPanel('news-collapse');
   
-  // Inject Skeletons temporarily
+  // Inject raw skeletons directly into the grid
   document.getElementById("chart-holder").innerHTML = '<div class="skeleton"></div>';
   document.getElementById("verdict-area").innerHTML = '<div class="skeleton"></div>';
-  document.getElementById("news-area").innerHTML = '<div class="news-item"><div class="skeleton"></div></div><div class="news-item"><div class="skeleton"></div></div>';
+  document.getElementById("news-area").innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
 
   const forecastPromise = fetch(`${API_BASE}/forecast/${ticker}`);
   const newsPromise = fetch(`${API_BASE}/news-analysis/${ticker}`);
@@ -533,8 +539,8 @@ async function runFullReport(){
     renderChart(forecast);
     renderNews(newsData.news || []);
   }catch(e){
-    document.getElementById("chart-holder").innerHTML = '<div style="color:var(--negative)">Error loading quantitative forecast.</div>';
-    document.getElementById("news-area").innerHTML = `<div class="error" style="padding: 24px;">Data error: ${e.message}</div>`;
+    document.getElementById("chart-holder").innerHTML = '<div class="error">Error loading quantitative forecast.</div>';
+    document.getElementById("news-area").innerHTML = `<div class="error">Data error: ${e.message}</div>`;
   }
 
   try{
